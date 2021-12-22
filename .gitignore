@@ -1,0 +1,21 @@
+# IDE temp files #
+.vscode/
+.ipynb_checkpoints
+
+
+
+
+# Python files #
+dist
+*.whl
+*.pytest_cache
+__pycache__
+
+
+# OS generated files #
+######################
+.directory
+.DS_Store
+Icon?
+Thumbs.db
+
