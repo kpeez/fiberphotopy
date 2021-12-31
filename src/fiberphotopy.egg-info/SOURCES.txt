@@ -1,6 +1,0 @@
-README.md
-setup.py
-src/fiberphotopy.egg-info/PKG-INFO
-src/fiberphotopy.egg-info/SOURCES.txt
-src/fiberphotopy.egg-info/dependency_links.txt
-src/fiberphotopy.egg-info/top_level.txt

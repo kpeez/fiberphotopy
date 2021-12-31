@@ -1,12 +1,12 @@
 # IDE temp files #
 .vscode/
 .ipynb_checkpoints
-
-
+*.egg-info
 
 
 # Python files #
 dist
+build
 *.whl
 *.pytest_cache
 __pycache__
