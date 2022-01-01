@@ -327,7 +327,7 @@ def fp_traces_panel(
 
 
 @savefig
-def tfc_trial_avg(
+def plot_trial_avg(
     df,
     hue=None,
     title=None,
@@ -404,7 +404,7 @@ def tfc_trial_avg(
 
 
 @savefig
-def tfc_trial_indiv(
+def plot_trial_indiv(
     df, subplot_params=(3, 4), fig_size=(32, 24), suptitle=None, **kwargs
 ):
     """
@@ -430,7 +430,7 @@ def tfc_trial_indiv(
     for i, ax in enumerate(axs.reshape(-1)):
         if i + 1 <= max(df["Trial"]):
             single_trial = df.loc[df["Trial"] == i + 1, :]
-            tfc_trial_avg(single_trial, ax=ax, title=f"Trial {i+1}", **kwargs)
+            plot_trial_avg(single_trial, ax=ax, title=f"Trial {i+1}", **kwargs)
         else:
             fig.delaxes(ax)
     if suptitle:
@@ -440,7 +440,7 @@ def tfc_trial_indiv(
 
 
 @savefig
-def tfc_trials_heatmap(
+def plot_trial_heatmap(
     df, yvar="465nm_dFF_znorm", fig_size=(32, 6), label_size=16, **kwargs
 ):
     """
@@ -451,7 +451,7 @@ def tfc_trials_heatmap(
     df : DataFrame
         Trial-level DataFrame from trials_df()
     yvar : str, optional
-        Column containing fluorescence values to plot, by default '465nm_dFF_znorm'
+        Column containing fluorescence values to , by default '465nm_dFF_znorm'
     fig_size : tuple, optional
         Size of figure, by default (32, 6)
     label_size : int, optional

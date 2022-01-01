@@ -17,6 +17,6 @@ from .plotting.fp_viz import (
     plot_traces,
     plot_fp_session,
     fp_traces_panel,
-    tfc_trial_avg,
-    tfc_trials_heatmap,
+    plot_trial_avg,
+    plot_trial_heatmap,
 )
