@@ -95,12 +95,7 @@ def update_expt_config(expt_config, config_filename, update_dict):
         config_filename (str): Name of expt_config file
         update_dict (dict): dict of keys in expt_config to update.
     """
-    # # update params contianing project_path
-    # if "project_path" in update_dict.keys():
-    #     update_dict["fig_path"] = update_dict["project_path"] + "figures/"
-    #     update_dict["data_path"] = update_dict["project_path"] + "data/"
-    # update expt_config
-    # update dir dict
+
     if "dirs" in update_dict.keys():
         dir_dict = update_dict.pop("dirs")
         # update params contianing project_path

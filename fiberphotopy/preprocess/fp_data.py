@@ -13,10 +13,10 @@ def save_data(func):
     Decorator function for saving out data
 
     Args:
-        func ([type]): [description]
+        func (callable): The function for creating data.
 
     Returns:
-        [type]: [description]
+        *args, **kwargs: Arguments & keyword arguments.
     """
 
     @wraps(func)

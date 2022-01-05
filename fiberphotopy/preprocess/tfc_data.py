@@ -104,34 +104,22 @@ def trials_df(
     1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each CS onset
     2. Normalizes dFF for each trial to the avg dFF of each trial's pre-CS period.
 
-    ! Session must be a sheet name in 'TFC phase components.xlsx'
+    ! Note: Session must be a sheet name in 'TFC phase components.xlsx'
 
-    Parameters
-    ----------
-    df : DataFrame
-        Session data to calculate trial-level data.
-    session : str, optional
-        Name of session used to label DataFrame, by default 'train'
-    yvar : str, optional
-        Name of data to trial-normalize, by default '465nm_dFF'
-    normalize : bool, optional
-        Normalize yvar to baseline of each trial, by default True
-    trial_start : int, optional
-        Start of trial, by default -20
-    cs_dur : int, optional
-        CS duration used to calculate trial time, by default 20
-    us_dur : int, optional
-        US duration, by default 2
-    trace_dur : int, optional
-        Trace interval duration, by default 20
-    iti_dur : int, optional
-        Length of inter-trial-interval; used to calculate trial time, by default 120
+    Args:
+        df (DataFrame): Session data to be converted to trial-level format.
+        session (str): Name of session used to label DataFrame. Defaults to "train".
+        yvar (str): Name of dependent variable to trial-normalize. Defaults to "465nm_dFF".
+        normalize (bool, optional): Normalize yvar to baseline of each trial. Defaults to True.
+        trial_start (int, optional): Time at start of trial. Defaults to -20.
+        cs_dur (int, optional): CS duration used to calculate trial time. Defaults to 20.
+        trace_dur (int, optional): Duration of trace interval. Defaults to 20.
+            Set to 0 for delay conditioning.
+        us_dur (int, optional): Duration of unconditional stimulus. Defaults to 2.
+        iti_dur (int, optional): Duration of intertrial interval. Defaults to 120.
 
-
-    Returns
-    -------
-    DataFrame
-        Trial-level data with `yvar` trial-normalized.
+    Returns:
+        DataFrame: Trial-level data with `yvar` trial-normalized.
     """
     df = label_tfc_phases(df, session=session)
 

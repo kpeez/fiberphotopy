@@ -31,15 +31,14 @@ def set_palette(color_pal=None, show=False):
 
 
 def check_ax(ax, figsize=None):
-    """Check whether a figure axes object is defined, define if not.
-    Parameters
-    ----------
-    ax : matplotlib.Axes or None
-        Axes object to check if is defined.
-    Returns
-    -------
-    ax : matplotlib.Axes
-        Figure axes object to use.
+    """
+    Check whether a figure axes object is defined, define if not.
+
+    Args:
+        ax (matplotlib.Axes or None): Axes object to check if is defined.
+
+    Returns:
+        matplotlib.Axes: Figure axes object to use.
     """
 
     if not ax:
@@ -145,23 +144,10 @@ def style_plot(func, *args, **kwargs):  # pylint: disable=unused-argument
     """
     Decorator function to make a plot and run apply_plot_style() on it.
 
-    Parameters
-    ----------
-    func : callable
-        The plotting function for creating a plot.
-    *args, **kwargs
-        Arguments & keyword arguments.
-        These should include any arguments for the plot, and those for applying plot style.
-    Notes
-    -----
-    This is a decorator, for plot, functions that functions roughly as:
-    - catching all inputs that relate to plot style
-    - create a plot, using the passed in plotting function & passing in all non-style arguments
-    - passing the style related arguments into a apply_custom_style()
-    This function itself does not create any plots or apply any styling itself.
-    By default, this function applies styling with the `apply_custom_style` function. Custom
-    functions for applying style can be passed in using `apply_custom_style` as a keyword argument.
-    The `apply_custom_style` function applies different plot elements,
+    Args:
+        func (callable): The plotting function for creating a plot.
+        *args, **kwargs: Arguments & keyword arguments.
+            These should include any arguments for the plot, and those for applying plot style.
     """
 
     def get_default_args(func):
@@ -192,21 +178,16 @@ def set_trialavg_aes(ax, title=None, cs_dur=20, us_del=40, us_dur=2):
     """
     Set aesthetics for trialavg plot.
 
-    Parameters
-    ----------
-    ax : matplotib.axes
-        Axes object to apply formatting to
-    cs_dur : int, optional
-        CS duration (specified in trialavg call), by default 20
-    us_del : int, optional
-        US delivery time (specified in trialavg call), by default 40
+    Args:
+        ax (matplotib.Axes): Axes object to apply formatting to
+        cs_dur (int, optional): CS duration (specified in trialavg call). Defaults to 20.
+    us_del (int, optional): US delivery time (specified in trialavg call). Defaults to 40.
     us_dur : int, optional
-        US duration (specified in trialavg call), by default 2
+        US duration (specified in trialavg call). Defaults to 2.
 
-    Returns
-    -------
-    [type]
-        [description]
+    Returns:
+        matplotlib.Axes
+            Figure axes object to use.
     """
     # adjust x-axis margin to shift plot adjacent to y-axis
     ax.margins(x=0)

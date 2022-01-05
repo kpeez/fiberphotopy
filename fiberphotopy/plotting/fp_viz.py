@@ -74,33 +74,6 @@ def plot_fp_session(
 ):
     """
     Plot excitation and isosbestic fluorescence as well as dFF (standard method).
-
-    Parameters
-    ----------
-    df : DataFrame
-        Data to plot. If using trace = 'dFF' DataFrame must contain dFF values.
-    yvar : str
-        Column containing excitation fluorescence, by default '465nm'
-    yiso : str
-        Name of column with raw isosbestic values, by default '405nm'
-    dffvar : str, optional
-        Name of column with dFF values, by default '{yvar}_dFF. Set to None to plot only raw values.
-    xvar : str
-        Column containing time values, by default 'time'
-    session : str, optional
-        Name of session, used for figure title and file name if saving, by default 'Training'
-    Yiso : bool, optional
-        Plot isosbestic signal with excitation, by default True
-    fig_size : tuple, optional
-        Specify figure size, by default (20, 10)
-    xlim : tuple, optional
-        Specify x-axis limits, by default None
-    save_fig : bool, optional
-        Save the figure, by default False. See Notes for more info.
-
-    Notes
-    -----
-    If using save_fig, can specify a fig_path (default is ~/Desktop).
     """
 
     # plot aesthetics variables
@@ -155,33 +128,6 @@ def plot_traces(
 ):
     """
     Plot excitation and isosbestic fluorescence.
-
-    Parameters
-    ----------
-    df : DataFrame
-        Data to plot. If using trace = 'dFF' DataFrame must contain dFF values.
-    yvar : str, optional
-        Column containing excitation fluorescence, by default '465nm'
-    yiso : str, optional
-        Name of column with raw isosbestic values, by default '405nm'
-    xvar : str, optional
-        Column containing time values, by default 'time'
-    session : str, optional
-        Name of session, used for figure title and file name if saving, by default 'Training'
-    trace : str, optional
-        Plot raw traces or dFF traces, by default 'raw'
-    Yiso : bool, optional
-        Plot isosbestic signal with excitation, by default True
-    fig_size : tuple, optional
-        Specify figure size, by default (20, 10)
-    xlim : tuple, optional
-        Specify x-axis limits, by default None
-    save_fig : bool, optional
-        Save the figure, by default False. See Notes for more info.
-
-    Notes
-    -----
-    If using save_fig, can specify a fig_path (default is ~/Desktop).
     """
     yvar = yvar if trace == "raw" else yvar + f"_{trace}"
 
@@ -245,36 +191,6 @@ def fp_traces_panel(
     1. Mean-centered 465nm/560nm and 405nm fluorescence.
     2. Predicted vs actual 465nm/560nm values.
     3. dFF values from fit_linear()
-
-    Parameters
-    ----------
-    df : DataFrame
-        Data containing raw fluorsence and dFF values.
-    session : str
-        Name of session. Used to title plot and filename for saving.
-    yvar : str, optional
-        Name of column with raw fluorescence values, by default '465nm'
-    yiso : str, optional
-        Name of column with raw isosbestic values, by default '405nm'
-    xlim : tuple, optional
-        Range to restrict x-axis of plot, by default None
-    y1shift : float, optional
-        Value to adjust first plot, by default 0.05.
-        Use if fluorescence and isosbestic series are still offset after mean-centering.
-    y1lim : tuple, optional
-        Range to restrict y-axis of plot 1, by default None
-    y2lim : tuple, optional
-        Range to restrict y-axis of plot 2, by default None
-    y3lim : tuple, optional
-        Range to restrict y-axis of plot 3, by default None
-    fig_size : tuple, optional
-        Size of figure, by default (24, 12)
-    save_fig : bool, optional
-        Save the figure, by default False. See Notes for more info.
-
-    Notes
-    -----
-    If using save_fig, can specify a fig_path (default is ~/Desktop).
     """
     yiso = "405nm"
     # yvar_col = kp_pal[4]
@@ -347,24 +263,7 @@ def plot_trial_avg(
 ):
     """
         Plot trial-averaged dFF signal.
-
-        Parameters
-        ----------
-        df : DataFrame
-            Trial-level DataFrame from trials_df()
-        yvar : str, optional
-            Column containing fluorescence values to plot, by default '465nm_dFF_znorm'
-        xvar : str, optional
-            Column containing trial-level timepoints, by default 'time_trial'
-        cs_dur : int, optional
-            CS duration. Used to draw rectangle around CS time period, by default 20
-        us_del : int, optional
-            Time point of US delivery, by default 40
-        us_dur : int, optional
-            US duration. Used to Draw rectangle around US time period, by default 2
-        fig_size : tuple, optional
-            Size of figure, by default (12, 8)
-        """
+    """
 
     plot_style()
     # initialize the plot and apply trialavg formatting
@@ -417,17 +316,6 @@ def plot_trial_indiv(
     """
     Generate trial-by-trial plot averaged across subjects.
     Users can control the shape of the suplots by passing a tuple into subplot_params.
-
-    Parameters
-    ----------
-    df : DataFrame
-        Trial-level DataFrame from tfc_dat.trials_df()
-    subplot_params : tuple, optional
-        Shape of subplot (nrows, ncols), by default (3, 4)
-    fig_size : tuple, optional
-        Size of the figure, by default (38, 24)
-    suptitle : [type], optional
-        Provide a title for the plot, by default None
     """
     fig, axs = plt.subplots(
         subplot_params[0], subplot_params[1], figsize=fig_size, sharey=False
@@ -453,17 +341,6 @@ def plot_trial_heatmap(
 ):
     """
     Plot heatmap of dFF across trials.
-
-    Parameters
-    ----------
-    df : DataFrame
-        Trial-level DataFrame from trials_df()
-    yvar : str, optional
-        Column containing fluorescence values to , by default '465nm_dFF_znorm'
-    fig_size : tuple, optional
-        Size of figure, by default (32, 6)
-    label_size : int, optional
-        Size of x-axis tick labels, by default 16
     """
     # pivot df for heatmap format
     df_group_agg = df.pivot_table(
@@ -493,77 +370,4 @@ def plot_trial_heatmap(
     xmax = max(df["time_trial"])
     xloc = np.arange(0, len(df_group_agg.columns), 50)
     xlabs = np.arange(int(xmin), int(xmax), 5)
-    plt.xticks(xloc, xlabs)  # , rotation=45)
-
-
-# @savefig
-# def tfc_trial_avg_old(
-#     df,
-#     yvar="465nm_dFF_znorm",
-#     xvar="time_trial",
-#     cs_dur=20,
-#     us_del=40,
-#     us_dur=2,
-#     fig_size=(12, 8),
-#     **kwargs,
-# ):
-#     """
-#     Plot trial-averaged dFF signal.
-
-#     Parameters
-#     ----------
-#     df : DataFrame
-#         Trial-level DataFrame from trials_df()
-#     yvar : str, optional
-#         Column containing fluorescence values to plot, by default '465nm_dFF_znorm'
-#     xvar : str, optional
-#         Column containing trial-level timepoints, by default 'time_trial'
-#     cs_dur : int, optional
-#         CS duration. Used to draw rectangle around CS time period, by default 20
-#     us_del : int, optional
-#         Time point of US delivery, by default 40
-#     us_dur : int, optional
-#         US duration. Used to Draw rectangle around US time period, by default 2
-#     fig_size : tuple, optional
-#         Size of figure, by default (12, 8)
-#     """
-
-#     # collapse data across all trials
-#     mean_vals = (
-#         df.loc[:, ["Animal", "Trial", xvar, yvar]].groupby([xvar]).mean().reset_index()
-#     )
-#     # collapse across trials within each animal
-#     avg_subj_trial = (
-#         df.loc[:, ["Animal", "Trial", xvar, yvar]]
-#         .groupby(["Animal", xvar])
-#         .mean()
-#         .reset_index()
-#     )
-#     error_vals = avg_subj_trial.groupby([xvar]).sem().reset_index()
-#     # grab variables for plotting
-#     X = mean_vals.loc[:, xvar]
-#     Y = mean_vals.loc[:, yvar]
-#     Yerror = error_vals.loc[:, yvar]
-#     # generate figure and add subplot
-#     fig = plt.figure(figsize=fig_size)
-#     ax = fig.add_subplot(1, 1, 1)
-#     # add dashed line at y=0, dashed lines for shock
-#     ax.axhline(y=0, linestyle="-", color="black", linewidth=0.6)
-#     # add rectangle to highlight CS period
-#     ax.axvspan(0, cs_dur, facecolor="grey", alpha=0.2)
-#     # add dashed black rectangle around shock interval
-#     ax.axvspan(us_del, us_del + us_dur, facecolor="none", edgecolor="black", ls="--")
-#     # plot the data
-#     plt.plot(X, Y, linewidth=1.5, **kwargs)
-#     plt.fill_between(X, Y - Yerror, Y + Yerror, alpha=0.15, **kwargs)
-#     # adjust x-axis margin to shift plot adjacent to y-axis
-#     ax.margins(x=0)
-#     # change label size
-#     ylab = r"Normalized $\Delta F/F %$"
-#     xlab = "Time from cue onset (s)"
-#     # changed from 20,20 to 22,28 on 8-5-2019
-#     tick_size = 22
-#     label_size = 28
-#     ax.tick_params(labelsize=tick_size, width=1, length=8)
-#     ax.set_ylabel(ylab, size=label_size)
-#     ax.set_xlabel(xlab, size=label_size)
+    plt.xticks(xloc, xlabs)
