@@ -1,6 +1,7 @@
 """ Visualize fiber photometry data."""
 import numpy as np
 import matplotlib.pyplot as plt
+from plotting.fp_viz_utils import style_plot
 import seaborn as sns
 from photometry_analysis import fp_viz_utils, fp_dat
 from photometry_analysis.fp_viz_utils import savefig
@@ -30,7 +31,7 @@ def set_palette(color_pal=None, show=False):
 
 def plot_style(figure_size=None):
     """Set default plot style."""
-    figure_size = [30, 20] if figure_size is None else figure_size
+    figure_size = figure_size if figure_size else [30, 20]
     size_scalar = (sum(figure_size) / 2) / 25
     # figure and axes info
     plt.rcParams["figure.facecolor"] = "white"
@@ -58,6 +59,7 @@ def plot_style(figure_size=None):
 
 
 @savefig
+@style_plot
 def plot_fp_session(
     df,
     yvar="465nm",
@@ -138,6 +140,7 @@ def plot_fp_session(
 
 
 @savefig
+@style_plot
 def plot_traces(
     df,
     yvar="465nm",
@@ -223,6 +226,7 @@ def plot_traces(
 
 
 @savefig
+@style_plot
 def fp_traces_panel(
     df,
     session="session",
@@ -327,6 +331,7 @@ def fp_traces_panel(
 
 
 @savefig
+@style_plot
 def plot_trial_avg(
     df,
     hue=None,
@@ -361,6 +366,7 @@ def plot_trial_avg(
             Size of figure, by default (12, 8)
         """
 
+    plot_style()
     # initialize the plot and apply trialavg formatting
     ax = fp_viz_utils.check_ax(ax, figsize=fig_size)
     fp_viz_utils.set_trialavg_aes(ax, title, cs_dur, us_del, us_dur)
@@ -404,6 +410,7 @@ def plot_trial_avg(
 
 
 @savefig
+@style_plot
 def plot_trial_indiv(
     df, subplot_params=(3, 4), fig_size=(32, 24), suptitle=None, **kwargs
 ):
@@ -440,6 +447,7 @@ def plot_trial_indiv(
 
 
 @savefig
+@style_plot
 def plot_trial_heatmap(
     df, yvar="465nm_dFF_znorm", fig_size=(32, 6), label_size=16, **kwargs
 ):
@@ -488,74 +496,74 @@ def plot_trial_heatmap(
     plt.xticks(xloc, xlabs)  # , rotation=45)
 
 
-@savefig
-def tfc_trial_avg_old(
-    df,
-    yvar="465nm_dFF_znorm",
-    xvar="time_trial",
-    cs_dur=20,
-    us_del=40,
-    us_dur=2,
-    fig_size=(12, 8),
-    **kwargs,
-):
-    """
-    Plot trial-averaged dFF signal.
+# @savefig
+# def tfc_trial_avg_old(
+#     df,
+#     yvar="465nm_dFF_znorm",
+#     xvar="time_trial",
+#     cs_dur=20,
+#     us_del=40,
+#     us_dur=2,
+#     fig_size=(12, 8),
+#     **kwargs,
+# ):
+#     """
+#     Plot trial-averaged dFF signal.
 
-    Parameters
-    ----------
-    df : DataFrame
-        Trial-level DataFrame from trials_df()
-    yvar : str, optional
-        Column containing fluorescence values to plot, by default '465nm_dFF_znorm'
-    xvar : str, optional
-        Column containing trial-level timepoints, by default 'time_trial'
-    cs_dur : int, optional
-        CS duration. Used to draw rectangle around CS time period, by default 20
-    us_del : int, optional
-        Time point of US delivery, by default 40
-    us_dur : int, optional
-        US duration. Used to Draw rectangle around US time period, by default 2
-    fig_size : tuple, optional
-        Size of figure, by default (12, 8)
-    """
+#     Parameters
+#     ----------
+#     df : DataFrame
+#         Trial-level DataFrame from trials_df()
+#     yvar : str, optional
+#         Column containing fluorescence values to plot, by default '465nm_dFF_znorm'
+#     xvar : str, optional
+#         Column containing trial-level timepoints, by default 'time_trial'
+#     cs_dur : int, optional
+#         CS duration. Used to draw rectangle around CS time period, by default 20
+#     us_del : int, optional
+#         Time point of US delivery, by default 40
+#     us_dur : int, optional
+#         US duration. Used to Draw rectangle around US time period, by default 2
+#     fig_size : tuple, optional
+#         Size of figure, by default (12, 8)
+#     """
 
-    # collapse data across all trials
-    mean_vals = (
-        df.loc[:, ["Animal", "Trial", xvar, yvar]].groupby([xvar]).mean().reset_index()
-    )
-    # collapse across trials within each animal
-    avg_subj_trial = (
-        df.loc[:, ["Animal", "Trial", xvar, yvar]]
-        .groupby(["Animal", xvar])
-        .mean()
-        .reset_index()
-    )
-    error_vals = avg_subj_trial.groupby([xvar]).sem().reset_index()
-    # grab variables for plotting
-    X = mean_vals.loc[:, xvar]
-    Y = mean_vals.loc[:, yvar]
-    Yerror = error_vals.loc[:, yvar]
-    # generate figure and add subplot
-    fig = plt.figure(figsize=fig_size)
-    ax = fig.add_subplot(1, 1, 1)
-    # add dashed line at y=0, dashed lines for shock
-    ax.axhline(y=0, linestyle="-", color="black", linewidth=0.6)
-    # add rectangle to highlight CS period
-    ax.axvspan(0, cs_dur, facecolor="grey", alpha=0.2)
-    # add dashed black rectangle around shock interval
-    ax.axvspan(us_del, us_del + us_dur, facecolor="none", edgecolor="black", ls="--")
-    # plot the data
-    plt.plot(X, Y, linewidth=1.5, **kwargs)
-    plt.fill_between(X, Y - Yerror, Y + Yerror, alpha=0.15, **kwargs)
-    # adjust x-axis margin to shift plot adjacent to y-axis
-    ax.margins(x=0)
-    # change label size
-    ylab = r"Normalized $\Delta F/F %$"
-    xlab = "Time from cue onset (s)"
-    # changed from 20,20 to 22,28 on 8-5-2019
-    tick_size = 22
-    label_size = 28
-    ax.tick_params(labelsize=tick_size, width=1, length=8)
-    ax.set_ylabel(ylab, size=label_size)
-    ax.set_xlabel(xlab, size=label_size)
+#     # collapse data across all trials
+#     mean_vals = (
+#         df.loc[:, ["Animal", "Trial", xvar, yvar]].groupby([xvar]).mean().reset_index()
+#     )
+#     # collapse across trials within each animal
+#     avg_subj_trial = (
+#         df.loc[:, ["Animal", "Trial", xvar, yvar]]
+#         .groupby(["Animal", xvar])
+#         .mean()
+#         .reset_index()
+#     )
+#     error_vals = avg_subj_trial.groupby([xvar]).sem().reset_index()
+#     # grab variables for plotting
+#     X = mean_vals.loc[:, xvar]
+#     Y = mean_vals.loc[:, yvar]
+#     Yerror = error_vals.loc[:, yvar]
+#     # generate figure and add subplot
+#     fig = plt.figure(figsize=fig_size)
+#     ax = fig.add_subplot(1, 1, 1)
+#     # add dashed line at y=0, dashed lines for shock
+#     ax.axhline(y=0, linestyle="-", color="black", linewidth=0.6)
+#     # add rectangle to highlight CS period
+#     ax.axvspan(0, cs_dur, facecolor="grey", alpha=0.2)
+#     # add dashed black rectangle around shock interval
+#     ax.axvspan(us_del, us_del + us_dur, facecolor="none", edgecolor="black", ls="--")
+#     # plot the data
+#     plt.plot(X, Y, linewidth=1.5, **kwargs)
+#     plt.fill_between(X, Y - Yerror, Y + Yerror, alpha=0.15, **kwargs)
+#     # adjust x-axis margin to shift plot adjacent to y-axis
+#     ax.margins(x=0)
+#     # change label size
+#     ylab = r"Normalized $\Delta F/F %$"
+#     xlab = "Time from cue onset (s)"
+#     # changed from 20,20 to 22,28 on 8-5-2019
+#     tick_size = 22
+#     label_size = 28
+#     ax.tick_params(labelsize=tick_size, width=1, length=8)
+#     ax.set_ylabel(ylab, size=label_size)
+#     ax.set_xlabel(xlab, size=label_size)
