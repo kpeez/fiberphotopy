@@ -149,6 +149,7 @@ def load_session_data(
     input_ch=1,
     ref_led=1,
     sig_led=2,
+    subject_dict=None,
     TTL_trim=True,
     TTL_session_ch=1,
     TTL_on=0,
@@ -191,7 +192,13 @@ def load_session_data(
         df_temp = fit_linear(df_temp, Y_sig=sig_name, Y_ref=ref_name)
         df_list.append(df_temp)
 
-    return pd.concat(df_list)
+        df = pd.concat(df_list)
+        if subject_dict:
+            for key in subject_dict:
+                subj_rows = df["Animal"].str.contains(key)
+                df.loc[subj_rows, "Animal"] = subject_dict[key]
+
+    return df
 
 
 def fit_linear(df, Y_sig="465nm", Y_ref="405nm"):
