@@ -20,3 +20,5 @@ from .plotting.fp_viz import (
     plot_trial_avg,
     plot_trial_heatmap,
 )
+
+from .stats.psth_stats import calc_pre_post, pre_post_stats
