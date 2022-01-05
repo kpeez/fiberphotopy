@@ -1,5 +1,7 @@
 """ Utilities for plotting functions."""
-import os
+import datetime
+import inspect
+from pathlib import Path
 from functools import wraps
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -59,12 +61,129 @@ def savefig(func):
         func(*args, **kwargs)
 
         if save_fig:
-            if fig_path:
-                full_path = os.path.join(fig_path, fig_name)
-            else:
-                full_path = os.path.expanduser(f"~/Desktop/{fig_name}.png")
+            fig_path = Path(fig_path) if fig_path else Path(Path.home() / "Desktop")
+            fig_name = (
+                fig_name
+                if fig_name
+                else datetime.datetime.now().strftime("%Y-%m-%d-%Hh%Mm%Ss-NewFig")
+            )
 
-            plt.savefig(full_path)
+            plt.savefig(f"{fig_path}/{fig_name}.png", facecolor="white", dpi=300)
+
+            # if fig_path:
+            #     full_path = os.path.join(fig_path, fig_name)
+            # else:
+            #     full_path = os.path.expanduser(f"~/Desktop/{fig_name}.png")
+
+            # plt.savefig(full_path, facecolor="white", dpi=300)
+
+    return decorated
+
+
+AXIS_STYLE_ARGS = ["title", "xlabel", "ylabel", "xlim", "ylim"]
+# Custom style arguments are those that are custom-handled by the plot style function
+CUSTOM_STYLE_ARGS = [
+    "title_fontsize",
+    "label_size",
+    "labelpad",
+    "tick_labelsize",
+    "legend_size",
+    "legend_loc",
+    "markerscale",
+]
+STYLE_ARGS = AXIS_STYLE_ARGS + CUSTOM_STYLE_ARGS
+# Define default values for aesthetic
+# These are all custom style arguments
+TITLE_FONTSIZE = 48
+LABEL_PAD = 8
+LABEL_SIZE = 48
+TICK_LABELSIZE = 32
+LEGEND_SIZE = 24
+LEGEND_LOC = "best"
+MARKERSCALE = 1
+
+
+def apply_plot_style(ax, style_args=None, **kwargs):
+    """
+    Apply custom plot style. Used to set default plot options
+    """
+    style_args = style_args if style_args else AXIS_STYLE_ARGS
+    # Apply any provided axis style arguments
+    plot_kwargs = {key: val for key, val in kwargs.items() if key in style_args}
+    ax.set(**plot_kwargs)
+    # update title size
+    if ax.get_title():
+        ax.set_title(ax.get_title(), fontdict={"fontsize": TITLE_FONTSIZE}, pad=12)
+    # Settings for the axis labels and ticks
+    label_size = kwargs.pop("label_size", LABEL_SIZE)
+    ax.xaxis.label.set_size(label_size * 0.75)
+    ax.yaxis.label.set_size(label_size)
+    ax.tick_params(
+        axis="both",
+        which="major",
+        pad=kwargs.pop("pad", LABEL_PAD),
+        labelsize=kwargs.pop("tick_labelsize", TICK_LABELSIZE),
+    )
+    # if legend labels get duplicated, pick the original ones
+    if ax.get_legend_handles_labels()[0]:
+        handles, labels = ax.get_legend_handles_labels()
+        nhandles = len(handles)
+        first_handle = int(nhandles / 2) if nhandles > 2 else 0
+        ax.legend(
+            handles[first_handle:nhandles],
+            labels[first_handle:nhandles],
+            frameon=False,
+            prop={"size": kwargs.pop("legend_size", LEGEND_SIZE)},
+            loc=kwargs.pop("legend_loc", LEGEND_LOC),
+            markerscale=kwargs.pop("markerscale", MARKERSCALE),
+        )
+
+    plt.tight_layout()
+
+
+def style_plot(func, *args, **kwargs):  # pylint: disable=unused-argument
+    """
+    Decorator function to make a plot and run apply_plot_style() on it.
+
+    Parameters
+    ----------
+    func : callable
+        The plotting function for creating a plot.
+    *args, **kwargs
+        Arguments & keyword arguments.
+        These should include any arguments for the plot, and those for applying plot style.
+    Notes
+    -----
+    This is a decorator, for plot, functions that functions roughly as:
+    - catching all inputs that relate to plot style
+    - create a plot, using the passed in plotting function & passing in all non-style arguments
+    - passing the style related arguments into a apply_custom_style()
+    This function itself does not create any plots or apply any styling itself.
+    By default, this function applies styling with the `apply_custom_style` function. Custom
+    functions for applying style can be passed in using `apply_custom_style` as a keyword argument.
+    The `apply_custom_style` function applies different plot elements,
+    """
+
+    def get_default_args(func):
+        """
+        returns a dictionary of arg_name: default_values for the input function
+        """
+        argspec = inspect.getfullargspec(func)
+        return dict(zip(reversed(argspec.args), reversed(argspec.defaults)))
+
+    @wraps(func)
+    def decorated(*args, **kwargs):
+        # Grab any provided style arguments
+        style_args = kwargs.pop("style_args", STYLE_ARGS)
+        kwargs_local = get_default_args(func)
+        kwargs_local.update(kwargs)
+        style_kwargs = {key: kwargs.pop(key) for key in style_args if key in kwargs}
+        # Create the plot
+        func(*args, **kwargs)
+        # Get plot axis, if a specific one was provided, or just grab current and apply style
+        cur_ax = kwargs["ax"] if "ax" in kwargs and kwargs["ax"] else plt.gca()
+
+        apply_plot_style(cur_ax, **style_kwargs)
 
     return decorated
 
