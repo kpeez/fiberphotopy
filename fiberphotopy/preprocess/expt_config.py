@@ -38,7 +38,7 @@ def create_expt_config(project_path=None, config_name=None, project_name=None):
     new_config = {
         "experiment": project_name if project_name else "newproject",
         "dirs": {
-            "project_dir": str(project_path),
+            "project": str(project_path),
             "figures": str(project_path) + "/figures",
             "data": str(project_path) + "/data",
         },
@@ -95,14 +95,20 @@ def update_expt_config(expt_config, config_filename, update_dict):
         config_filename (str): Name of expt_config file
         update_dict (dict): dict of keys in expt_config to update.
     """
-    # update params contianing project_path
-    if "project_path" in update_dict.keys():
-        update_dict["fig_path"] = update_dict["project_path"] + "figures/"
-        update_dict["data_path"] = update_dict["project_path"] + "data/"
+    # # update params contianing project_path
+    # if "project_path" in update_dict.keys():
+    #     update_dict["fig_path"] = update_dict["project_path"] + "figures/"
+    #     update_dict["data_path"] = update_dict["project_path"] + "data/"
     # update expt_config
     # update dir dict
     if "dirs" in update_dict.keys():
         dir_dict = update_dict.pop("dirs")
+        # update params contianing project_path
+        if "project" in dir_dict.keys():
+            dir_dict["figures"] = dir_dict["project"] + "/figures/"
+            dir_dict["data"] = dir_dict["project"] + "/data/"
+            dir_dict["fp_data"] = dir_dict["project"] + "/raw/photometry/"
+            dir_dict["beh_data"] = dir_dict["project"] + "/raw/behavior"
         for key, val in dir_dict.items():
             expt_config["dirs"][key] = val
     for key in update_dict:
