@@ -89,6 +89,87 @@ def label_tfc_phases(df, session="train"):
 
 
 @save_data
+def tfc_trials_df(
+    df,
+    session="train",
+    yvar="465nm_dFF",
+    normalize=True,
+    trial_start=-20,
+    cs_dur=20,
+    trace_dur=20,
+    us_dur=2,
+    iti_dur=120,
+):
+    """
+    1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each CS onset
+    2. Normalizes dFF for each trial to the avg dFF of each trial's pre-CS period.
+
+    ! Note: Session must be a sheet name in 'TFC phase components.xlsx'
+
+    Args:
+        df (DataFrame): Session data to be converted to trial-level format.
+        session (str): Name of session used to label DataFrame. Defaults to "train".
+        yvar (str): Name of dependent variable to trial-normalize. Defaults to "465nm_dFF".
+        normalize (bool, optional): Normalize yvar to baseline of each trial. Defaults to True.
+        trial_start (int, optional): Time at start of trial. Defaults to -20.
+        cs_dur (int, optional): CS duration used to calculate trial time. Defaults to 20.
+        trace_dur (int, optional): Duration of trace interval. Defaults to 20.
+            Set to 0 for delay conditioning.
+        us_dur (int, optional): Duration of unconditional stimulus. Defaults to 2.
+        iti_dur (int, optional): Duration of intertrial interval. Defaults to 120.
+
+    Returns:
+        DataFrame: Trial-level data with `yvar` trial-normalized.
+    """
+    df = label_tfc_phases(df, session=session)
+
+    comp_labs = load_tfc_comp_times(session=session)
+    tone_idx = [
+        tone
+        for tone in range(len(comp_labs["component"]))
+        if "tone" in comp_labs["component"][tone]
+    ]
+    iti_idx = [
+        iti
+        for iti in range(len(comp_labs["component"]))
+        if "iti" in comp_labs["component"][iti]
+    ]
+    # determine number of tone trials from label
+    n_trials = len(tone_idx)
+    n_subjects = df.Animal.nunique()
+    trial_num = int(1)
+    # subset trial data (-20 prior to CS --> 100s after trace/shock)
+    for tone, iti in zip(tone_idx, iti_idx):
+        start = comp_labs.loc[tone, "start"] + trial_start
+        end = comp_labs.loc[iti, "start"] + iti_dur + trial_start
+        df.loc[(start <= df.time) & (df.time < end), "Trial"] = int(trial_num)
+        trial_num += 1
+    # remove extra time points
+    df = df.dropna().reset_index(drop=True)
+    # check if last_trial contains extra rows and if so, drop them
+    first_trial = df.query("Trial == Trial.unique()[0]")
+    last_trial = df.query("Trial == Trial.unique()[-1]")
+    extra_row_cnt = last_trial.shape[0] - first_trial.shape[0]
+    df = df[:-extra_row_cnt] if extra_row_cnt > 0 else df
+    df.loc[:, "Trial"] = df.loc[:, "Trial"].astype(int)
+    # create common time_trial
+    n_trial_pts = len(df.query("Animal == Animal[0] and Trial == Trial[0]"))
+    time_trial = np.linspace(
+        trial_start, trial_start + cs_dur + trace_dur + us_dur + iti_dur, n_trial_pts
+    )
+    df["time_trial"] = np.tile(np.tile(time_trial, n_trials), n_subjects)
+    # normalize data
+    if normalize:
+        df_list = []
+        for animal in df["Animal"].unique():
+            df_animal = df.query("Animal == @animal")
+            df_list.append(trial_normalize(df_animal, yvar=yvar))
+        df = pd.concat(df_list)
+
+    return df
+
+
+@save_data
 def trials_df(
     df,
     session="train",
