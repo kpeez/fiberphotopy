@@ -11,13 +11,14 @@ from .preprocess.expt_config import (
     update_expt_config,
 )
 
-from .preprocess.tfc_data import make_tfc_comp_times, trials_df
+from .preprocess.tfc_data import make_tfc_comp_times, tfc_trials_df, trials_df
 
 from .plotting.fp_viz import (
     plot_traces,
     plot_fp_session,
     fp_traces_panel,
     plot_trial_avg,
+    plot_trial_indiv,
     plot_trial_heatmap,
 )
 
