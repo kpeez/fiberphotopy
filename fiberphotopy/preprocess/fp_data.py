@@ -244,7 +244,7 @@ def trial_normalize(df, yvar):
         trial_std = df_trial.loc[df_trial["time_trial"] < 0, yvar].std()
         bnorm_vals.append((trial_vals - trial_mean) / trial_std)
 
-    df[f"{yvar}_znorm"] = np.asarray(znorm_vals).flatten()
-    df[f"{yvar}_baseline_norm"] = np.asarray(bnorm_vals).flatten()
+    df["dFF_znorm"] = np.asarray(znorm_vals).flatten()
+    df["dFF_baseline_norm"] = np.asarray(bnorm_vals).flatten()
 
     return df
