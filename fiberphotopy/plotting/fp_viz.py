@@ -252,7 +252,7 @@ def plot_trial_avg(
     df,
     hue=None,
     title=None,
-    yvar="465nm_dFF_znorm",
+    yvar="dFF_znorm",
     xvar="time_trial",
     cs_dur=20,
     us_del=40,
@@ -311,7 +311,12 @@ def plot_trial_avg(
 @savefig
 @style_plot
 def plot_trial_indiv(
-    df, subplot_params=(3, 4), fig_size=(32, 24), suptitle=None, **kwargs
+    df,
+    yvar="dFF_znorm",
+    subplot_params=(3, 4),
+    fig_size=(32, 24),
+    suptitle=None,
+    **kwargs,
 ):
     """
     Generate trial-by-trial plot averaged across subjects.
@@ -325,7 +330,7 @@ def plot_trial_indiv(
     for i, ax in enumerate(axs.reshape(-1)):
         if i + 1 <= max(df["Trial"]):
             single_trial = df.loc[df["Trial"] == i + 1, :]
-            plot_trial_avg(single_trial, ax=ax, title=f"Trial {i+1}", **kwargs)
+            plot_trial_avg(single_trial, yvar, ax=ax, title=f"Trial {i+1}", **kwargs)
         else:
             fig.delaxes(ax)
     if suptitle:
@@ -336,9 +341,7 @@ def plot_trial_indiv(
 
 @savefig
 @style_plot
-def plot_trial_heatmap(
-    df, yvar="465nm_dFF_znorm", fig_size=(32, 6), label_size=16, **kwargs
-):
+def plot_trial_heatmap(df, yvar="dFF_znorm", fig_size=(32, 6), label_size=16, **kwargs):
     """
     Plot heatmap of dFF across trials.
     """
