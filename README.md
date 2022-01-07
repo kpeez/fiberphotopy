@@ -11,7 +11,12 @@ import fiberphotopy.fiberphotopy as fp
 
 ## Installation
 
-[insert installation instructions]
+The easiest way to install fiberphotopy is with `pip`. Open your terminal and enter the following:
+
+~~~bash
+python -m pip install git+https://github.com/kpuhger/fiberphotopy.git 
+~~~
+
 
 ## Features
 
