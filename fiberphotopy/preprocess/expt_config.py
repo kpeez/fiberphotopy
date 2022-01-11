@@ -5,7 +5,7 @@ import yaml
 from ruamel.yaml.main import round_trip_load as yaml_load, round_trip_dump as yaml_dump
 
 
-def create_expt_config(project_path=None, config_name=None, project_name=None):
+def create_expt_config(expt_name=None, config_name=None, project_path=None):
     """
     Setup and create experiment configuration files.
 
@@ -36,7 +36,7 @@ def create_expt_config(project_path=None, config_name=None, project_name=None):
 
     # config file info
     new_config = {
-        "experiment": project_name if project_name else "newproject",
+        "experiment": expt_name if expt_name else "newproject",
         "dirs": {
             "project": str(project_path),
             "figures": str(project_path) + "/figures",
