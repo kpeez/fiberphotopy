@@ -55,7 +55,7 @@ def savefig(func):
 
         save_fig = kwargs.pop("save_fig", False)
         fig_name = kwargs.pop("fig_name", None)
-        fig_path = kwargs.pop("fig_dir", None)
+        fig_path = kwargs.pop("fig_path", None)
 
         func(*args, **kwargs)
 
@@ -121,7 +121,7 @@ def apply_plot_style(ax, style_args=None, **kwargs):
     if ax.get_legend_handles_labels()[0]:
         handles, labels = ax.get_legend_handles_labels()
         nhandles = len(handles)
-        first_handle = int(nhandles / 2) if nhandles > 2 else 0
+        first_handle = 0
         ax.legend(
             handles[first_handle:nhandles],
             labels[first_handle:nhandles],

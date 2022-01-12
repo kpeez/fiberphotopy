@@ -43,6 +43,7 @@ def save_data(func):
     return wrapper
 
 
+@save_data
 def load_doric_data(
     filename,
     sig_name=None,
