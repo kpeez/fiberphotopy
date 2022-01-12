@@ -22,13 +22,13 @@ def save_data(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         # add save_path and filename kwargs
-        save = kwargs.pop("save", None)
-        data_path = kwargs.pop("data_path", None)
+        save = kwargs.pop("save", False)
+        data_dir = kwargs.pop("data_dir", None)
         filename = kwargs.pop("filename", None)
 
         if save:
             # set path
-            dpath = data_path if data_path else str(Path.cwd())
+            dpath = data_dir if data_dir else str(Path.cwd())
             # set filename
             filename = (
                 filename
@@ -36,7 +36,7 @@ def save_data(func):
                 else datetime.datetime.now().strftime("%Y-%m-%d-%Hh%Mm%Ss_data")
             )
 
-            func(*args, **kwargs).to_csv(f"{dpath}/{filename}.csv")
+            func(*args, **kwargs).to_csv(f"{dpath}/{filename}.csv", index=False)
 
         return func(*args, **kwargs)
 

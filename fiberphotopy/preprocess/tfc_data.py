@@ -99,6 +99,7 @@ def tfc_trials_df(
     trace_dur=20,
     us_dur=2,
     iti_dur=120,
+    **kwargs,
 ):
     """
     1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each CS onset
