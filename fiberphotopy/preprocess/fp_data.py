@@ -23,12 +23,12 @@ def save_data(func):
     def wrapper(*args, **kwargs):
         # add save_path and filename kwargs
         save = kwargs.pop("save", False)
-        data_dir = kwargs.pop("data_dir", None)
+        data_path = kwargs.pop("data_path", None)
         filename = kwargs.pop("filename", None)
 
         if save:
             # set path
-            dpath = data_dir if data_dir else str(Path.cwd())
+            dpath = data_path if data_path else str(Path.cwd())
             # set filename
             filename = (
                 filename
