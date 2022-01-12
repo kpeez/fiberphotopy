@@ -55,12 +55,13 @@ def savefig(func):
 
         save_fig = kwargs.pop("save_fig", False)
         fig_name = kwargs.pop("fig_name", None)
-        fig_path = kwargs.pop("fig_path", None)
+        fig_path = kwargs.pop("fig_dir", None)
 
         func(*args, **kwargs)
 
         if save_fig:
             fig_path = Path(fig_path) if fig_path else Path(Path.home() / "Desktop")
+
             fig_name = (
                 fig_name
                 if fig_name
@@ -68,13 +69,6 @@ def savefig(func):
             )
 
             plt.savefig(f"{fig_path}/{fig_name}.png", facecolor="white", dpi=300)
-
-            # if fig_path:
-            #     full_path = os.path.join(fig_path, fig_name)
-            # else:
-            #     full_path = os.path.expanduser(f"~/Desktop/{fig_name}.png")
-
-            # plt.savefig(full_path, facecolor="white", dpi=300)
 
     return decorated
 
@@ -95,8 +89,8 @@ STYLE_ARGS = AXIS_STYLE_ARGS + CUSTOM_STYLE_ARGS
 # These are all custom style arguments
 TITLE_FONTSIZE = 48
 LABEL_PAD = 8
-LABEL_SIZE = 48
-TICK_LABELSIZE = 32
+LABEL_SIZE = 24
+TICK_LABELSIZE = 24
 LEGEND_SIZE = 24
 LEGEND_LOC = "best"
 MARKERSCALE = 1

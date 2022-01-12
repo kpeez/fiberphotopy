@@ -3,8 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from plotting.fp_viz_utils import style_plot
 import seaborn as sns
-from photometry_analysis import fp_viz_utils, fp_dat
-from photometry_analysis.fp_viz_utils import savefig
+from plotting.fp_viz_utils import savefig, check_ax, set_trialavg_aes
 
 # define color palette:
 kp_pal = [
@@ -58,8 +57,47 @@ def plot_style(figure_size=None):
     plt.rc("legend", fontsize=32 * size_scalar, frameon=False)
 
 
-@savefig
 @style_plot
+def plot_raw_data(
+    df_plot,
+    yvar="465nm",
+    yiso="405nm",
+    xvar="time",
+    session="Training",
+    ax=None,
+    **kwargs,
+):
+    ax = check_ax(ax)
+    X = df_plot.loc[:, xvar]
+    Y = df_plot.loc[:, yvar]
+    Yiso = df_plot.loc[:, yiso]
+    # plot raw fluorescence
+    ax.plot(X, Y, color=kp_pal[4], label=yvar)
+    ax.plot(X, Yiso, color=kp_pal[3], label="isosbestic")
+    ax.set_ylabel("Fluorescence (au)")
+
+
+@style_plot
+def plot_dff_data(
+    df_plot,
+    xvar="time",
+    yvar="465nm",
+    dffvar="dFF",
+    session="Training",
+    ax=None,
+    **kwargs,
+):
+    ax = check_ax(ax)
+    # plot dFF
+    X = df_plot.loc[:, xvar]
+    Ydff = df_plot.loc[:, yvar + "_" + dffvar]
+    dff_ylab = "z-score" if dffvar == "dFF_zscore" else r"$\Delta F/F$ (%)"
+    ax.axhline(y=0, linestyle="-", color="black")
+    ax.plot(X, Ydff, color=kp_pal[0])
+    ax.set_xlabel("Time (sec)")
+    ax.set_ylabel(dff_ylab)
+
+
 def plot_fp_session(
     df,
     yvar="465nm",
@@ -69,106 +107,34 @@ def plot_fp_session(
     session="Training",
     Yiso=True,
     fig_size=(20, 10),
-    xlim=None,
     **kwargs,
 ):
-    """
-    Plot excitation and isosbestic fluorescence as well as dFF (standard method).
-    """
+    # plot session for each subject
+    @savefig
+    def _session_plot(
+        df_plot,
+        yvar="465nm",
+        yiso="405nm",
+        dffvar="dFF",
+        xvar="time",
+        session="Training",
+        Yiso=True,
+        fig_size=fig_size,
+        **kwargs,
+    ):
 
-    # plot aesthetics variables
-    tick_size = 18
-    label_size = 24
-    title_size = 28
-    dff_ylab = "z-score" if dffvar == "dFF_zscore" else r"$\Delta F/F$ (%)"
-
-    df = fp_dat.fit_linear(df)
-
-    for idx in df["Animal"].unique():
-        df_plot = df.loc[df["Animal"] == idx, :]
-        X = df_plot.loc[:, xvar]
-        Y = df_plot.loc[:, yvar]
-        Yiso = df_plot.loc[:, yiso]
-        Ydff = df_plot.loc[:, yvar + "_" + dffvar]
-
-        fig, axs = plt.subplots(2, 1, figsize=fig_size, sharex=True)
-        fig.suptitle(f"{session}: {idx}", size=title_size)
-        # plot raw fluorescence
-        axs[0].plot(X, Y, color=kp_pal[4], label=yvar)
-        axs[0].plot(X, Yiso, color=kp_pal[3], label="isosbestic")
-        axs[0].set_ylabel("Fluorescence (au)", size=label_size)
+        fig, axs = plt.subplots(2, 1, figsize=fig_size)  # , sharex=True)
+        fig.suptitle(f"{session}: {df_plot['Animal'].unique()[0]}", size=28)
+        plot_raw_data(df_plot, ax=axs[0], **kwargs)
         axs[0].legend(fontsize=16, loc="upper right", bbox_to_anchor=(1, 1.1))
-        # plot dFF
-        axs[1].axhline(y=0, linestyle="-", color="black")
-        axs[1].plot(X, Ydff, color=kp_pal[0])
-        axs[1].set_xlabel("Time (sec)", size=label_size)
-        axs[1].set_ylabel(dff_ylab, size=label_size)
-
+        plot_dff_data(df_plot, ax=axs[1], **kwargs)
         for ax in axs:
             ax.margins(x=0)
-            ax.tick_params(axis="both", labelsize=tick_size, width=2, length=6)
+            ax.tick_params(axis="both", labelsize=18, width=2, length=6)
 
-        if xlim:
-            plt.xlim(xlim)
-
-
-@savefig
-@style_plot
-def plot_traces(
-    df,
-    yvar="465nm",
-    yiso="405nm",
-    xvar="time",
-    session="Training",
-    trace="raw",
-    Yiso=True,
-    fig_size=(20, 10),
-    xlim=None,
-    **kwargs,
-):
-    """
-    Plot excitation and isosbestic fluorescence.
-    """
-    yvar = yvar if trace == "raw" else yvar + f"_{trace}"
-
-    # plot aesthetics variables
-    xlab = "Time (sec)"
-    ylab = "Fluorescence (au)" if trace == "raw" else r"$\Delta F/F$ (%)"
-
-    tick_size = 18
-    label_size = 24
-    title_size = 28
-
-    for idx in df["Animal"].unique():
-        df_plot = df.loc[df["Animal"] == idx, :]
-        fig = plt.figure(figsize=fig_size)
-        ax = fig.add_subplot(1, 1, 1)
-        # plot aesthetics
-        ax.set_ylabel(ylab, size=label_size)
-        ax.set_xlabel(xlab, size=label_size)
-        ax.margins(x=0)
-        if trace == "raw":
-            title = f"{session}: {idx}: {yiso} (purple) + {yvar}"
-            ax.set_title(title, size=title_size)
-            X = df_plot.loc[:, xvar]
-            Y = df_plot.loc[:, yvar]
-            Yiso = df_plot.loc[:, yiso]
-            ax.plot(X, Y, color=kp_pal[4], label=yvar)
-            ax.plot(X, Yiso, color=kp_pal[3], label="isosbestic")
-            ax.legend(fontsize=16, loc="upper right", bbox_to_anchor=(1, 1.05))
-
-        elif trace in ["dFF", "dFF_zscore"]:
-            title = f"{session}: {idx}: {yvar}"
-            ax.set_title(title, size=title_size)
-            X = df_plot.loc[:, xvar]
-            Y = df_plot.loc[:, yvar]
-            ax.axhline(y=0, linestyle="-", color="black")
-            ax.plot(X, Y, color=kp_pal[4])
-
-        plt.tick_params(axis="both", labelsize=tick_size, width=2, length=6)
-
-        if xlim:
-            plt.xlim(xlim)
+    for subject in df["Animal"].unique():
+        subject_data = df.loc[df["Animal"] == subject, :]
+        _session_plot(subject_data, fig_name=f"{session} - {subject}", **kwargs)
 
 
 @savefig
@@ -267,8 +233,8 @@ def plot_trial_avg(
 
     plot_style()
     # initialize the plot and apply trialavg formatting
-    ax = fp_viz_utils.check_ax(ax, figsize=fig_size)
-    fp_viz_utils.set_trialavg_aes(ax, title, cs_dur, us_del, us_dur)
+    ax = check_ax(ax, figsize=fig_size)
+    set_trialavg_aes(ax, title, cs_dur, us_del, us_dur)
 
     if hue:
         hue_means = df.groupby([xvar, hue]).mean().reset_index()
