@@ -1,3 +1,7 @@
+# datasets
+datasets
+*.csv
+
 # IDE temp files #
 .vscode/
 .ipynb_checkpoints

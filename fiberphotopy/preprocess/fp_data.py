@@ -179,7 +179,7 @@ def load_session_data(
     Returns:
         DataFrame: Combined data for every file in the input directory.
     """
-    data_file_list = [str(data_file) for data_file in list(filedir.glob("*.csv"))]
+    data_file_list = [str(data_file) for data_file in list(Path(filedir).glob("*.csv"))]
     df_list = []
     for data_file in data_file_list:
         df_temp = load_doric_data(
