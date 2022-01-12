@@ -134,7 +134,9 @@ def plot_fp_session(
 
     for subject in df["Animal"].unique():
         subject_data = df.loc[df["Animal"] == subject, :]
-        _session_plot(subject_data, fig_name=f"{session} - {subject}", **kwargs)
+        _session_plot(
+            subject_data, fig_name=f"{session} - {subject} session plot", **kwargs
+        )
 
 
 @savefig
