@@ -210,11 +210,14 @@ def fit_linear(df, Y_sig="465nm", Y_ref="405nm"):
     mod = sm.OLS(Y, X).fit()
     Ypred = mod.predict(X)
     dFF = (Y - Ypred) / Ypred * 100
-    df[f"{Y_sig}_pred"] = Ypred
-    df[f"{Y_sig}_dFF"] = dFF
-    df[f"{Y_sig}_dFF_zscore"] = stats.zscore(dFF, ddof=1)
 
-    return df
+    return df.assign(
+        **{
+            f"{Y_sig}_pred": mod.predict(X),
+            f"{Y_sig}_dFF": (Y - mod.predict(X)) / mod.predict(X) * 100,
+            f"{Y_sig}_dFF_zscore": stats.zscore(dFF, ddof=1),
+        }
+    )
 
 
 def trial_normalize(df, yvar):
@@ -245,7 +248,8 @@ def trial_normalize(df, yvar):
         trial_std = df_trial.loc[df_trial["time_trial"] < 0, yvar].std()
         bnorm_vals.append((trial_vals - trial_mean) / trial_std)
 
-    df["dFF_znorm"] = np.asarray(znorm_vals).flatten()
-    df["dFF_baseline_norm"] = np.asarray(bnorm_vals).flatten()
+    return df.assign(
+        dFF_znorm=np.asarray(znorm_vals).flatten(),
+        dFF_baseline_norm=np.asarray(bnorm_vals).flatten(),
+    )
 
-    return df
