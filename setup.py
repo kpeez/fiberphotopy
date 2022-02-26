@@ -8,7 +8,6 @@ setup(
     author_email="krpuhger@gmail.com",
     packages=find_packages(where="fiberphotopy"),
     package_dir={"": "fiberphotopy"},
-    # packages=find_packages(include=["fiberphotopy", "fiberphotopy.*"]),
     scripts={},
     install_requires=["pandas", "numpy", "matplotlib", "seaborn"],
 )
