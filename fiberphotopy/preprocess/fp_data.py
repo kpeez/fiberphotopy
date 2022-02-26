@@ -202,19 +202,54 @@ def load_session_data(
     return df
 
 
-def fit_linear(df, Y_sig="465nm", Y_ref="405nm"):
+def get_ols_preds(Y, X):
+    """ Get simple linear regression predictions. """
+    mod = sm.OLS(Y, X).fit()
+    return mod.predict(X)
+
+
+def get_trial_ols_preds(df, Y, X):
+    """ Get trial-level simple linear regression predictions. """
+
+    assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
+
+    new_cols = [x for x in df.columns.to_list() if "nm_" not in x and "dFF" not in x]
+    df = df[new_cols].copy()
+
+    Ypred_trial = []
+    for trial in df["Trial"].unique():
+        X = df.loc[df["Trial"] == trial, X]
+        Y = df.loc[df["Trial"] == trial, Y]
+        Ypred_trial.extend(get_ols_preds(X, Y))
+
+    return Ypred_trial
+
+
+def fit_linear(df, Y_sig="465nm", Y_ref="405nm", by_trial=False):
 
     df = df.copy()
-    X = df[Y_ref]
-    Y = df[Y_sig]
-    mod = sm.OLS(Y, X).fit()
-    Ypred = mod.predict(X)
-    dFF = (Y - Ypred) / Ypred * 100
+    # X = df[Y_ref]
+    # Y = df[Y_sig]
+    if by_trial:
+        assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
+        new_cols = [
+            x for x in df.columns.to_list() if "nm_" not in x and "dFF" not in x
+        ]
+        df = df[new_cols].copy()
+        Ypred = []
+        for trial in df["Trial"].unique():
+            X = df.loc[df["Trial"] == trial, Y_ref].values
+            Y = df.loc[df["Trial"] == trial, Y_sig].values
+            Ypred.extend(get_ols_preds(Y, X))
+    else:
+        Ypred = get_ols_preds(Y=df[Y_sig], X=df[Y_ref])
+
+    dFF = (df[Y_sig] - Ypred) / Ypred * 100
 
     return df.assign(
         **{
-            f"{Y_sig}_pred": mod.predict(X),
-            f"{Y_sig}_dFF": (Y - mod.predict(X)) / mod.predict(X) * 100,
+            f"{Y_sig}_pred": Ypred,
+            f"{Y_sig}_dFF": dFF,
             f"{Y_sig}_dFF_zscore": stats.zscore(dFF, ddof=1),
         }
     )
@@ -235,7 +270,8 @@ def trial_normalize(df, yvar):
         DataFrame: New column named {yvar}_norm and {yvar}_baseline_norm
     """
 
-    df = df.copy()
+    assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
+    # df = df.copy()
 
     znorm_vals = []
     bnorm_vals = []
@@ -243,7 +279,7 @@ def trial_normalize(df, yvar):
         df_trial = df.query("Trial == @trial")
         trial_vals = df_trial[yvar].values
         znorm_vals.append(stats.zscore(trial_vals, ddof=1))
-
+        # trial baseline normalization
         trial_mean = df_trial.loc[df_trial["time_trial"] < 0, yvar].mean()
         trial_std = df_trial.loc[df_trial["time_trial"] < 0, yvar].std()
         bnorm_vals.append((trial_vals - trial_mean) / trial_std)
@@ -252,4 +288,3 @@ def trial_normalize(df, yvar):
         dFF_znorm=np.asarray(znorm_vals).flatten(),
         dFF_baseline_norm=np.asarray(bnorm_vals).flatten(),
     )
-

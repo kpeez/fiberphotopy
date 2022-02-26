@@ -3,7 +3,9 @@ from .preprocess.fp_data import (
     load_doric_data,
     trim_ttl_data,
     resample_data,
+    get_ols_preds,
     fit_linear,
+    trial_normalize,
 )
 
 from .preprocess.expt_config import (
