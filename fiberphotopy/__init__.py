@@ -5,6 +5,7 @@ from .preprocess.fp_data import (
     resample_data,
     get_ols_preds,
     fit_linear,
+    debleach_signals,
     trial_normalize,
     debleach_signal,
     fit_biexponential,
