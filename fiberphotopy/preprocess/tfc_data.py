@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from preprocess.fp_data import fit_linear, trial_normalize, save_data, debleach_signal
+from preprocess.fp_data import fit_linear, trial_normalize, save_data, debleach_signals
 
 
 def make_tfc_comp_times(n_trials, baseline, cs_dur, trace_dur, us_dur, iti_dur):
@@ -201,7 +201,7 @@ def tfc_trials_df(
     df_list = []
     for animal in df["Animal"].unique():
         if trial_debleach:
-            df_animal = debleach_signal(df.query("Animal == @animal"), by_trial=True)
+            df_animal = debleach_signals(df.query("Animal == @animal"), by_trial=True)
             df_animal = fit_linear(
                 df_animal,
                 Y_ref="ref_debleach",

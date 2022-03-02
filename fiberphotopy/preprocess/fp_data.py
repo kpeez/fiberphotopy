@@ -287,7 +287,7 @@ def fit_biexponential(df, t, y):
     return biexp
 
 
-def debleach_signal(df, Y_ref="405nm", Y_sig="465nm", by_trial=False):
+def debleach_signals(df, Y_ref="405nm", Y_sig="465nm", by_trial=False):
 
     df = df.copy()
 
@@ -307,4 +307,3 @@ def debleach_signal(df, Y_ref="405nm", Y_sig="465nm", by_trial=False):
     return df.assign(ref_debleach=df[Y_ref] - ref_biexp).assign(
         sig_debleach=df[Y_sig] - sig_biexp
     )
-
