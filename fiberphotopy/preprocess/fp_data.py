@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
+from scipy.optimize import curve_fit
 
 
 def save_data(func):
@@ -202,59 +203,6 @@ def load_session_data(
     return df
 
 
-def get_ols_preds(Y, X):
-    """ Get simple linear regression predictions. """
-    mod = sm.OLS(Y, X).fit()
-    return mod.predict(X)
-
-
-def get_trial_ols_preds(df, Y, X):
-    """ Get trial-level simple linear regression predictions. """
-
-    assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
-
-    new_cols = [x for x in df.columns.to_list() if "nm_" not in x and "dFF" not in x]
-    df = df[new_cols].copy()
-
-    Ypred_trial = []
-    for trial in df["Trial"].unique():
-        X = df.loc[df["Trial"] == trial, X]
-        Y = df.loc[df["Trial"] == trial, Y]
-        Ypred_trial.extend(get_ols_preds(X, Y))
-
-    return Ypred_trial
-
-
-def fit_linear(df, Y_sig="465nm", Y_ref="405nm", by_trial=False):
-
-    df = df.copy()
-    # X = df[Y_ref]
-    # Y = df[Y_sig]
-    if by_trial:
-        assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
-        new_cols = [
-            x for x in df.columns.to_list() if "nm_" not in x and "dFF" not in x
-        ]
-        df = df[new_cols].copy()
-        Ypred = []
-        for trial in df["Trial"].unique():
-            X = df.loc[df["Trial"] == trial, Y_ref].values
-            Y = df.loc[df["Trial"] == trial, Y_sig].values
-            Ypred.extend(get_ols_preds(Y, X))
-    else:
-        Ypred = get_ols_preds(Y=df[Y_sig], X=df[Y_ref])
-
-    dFF = (df[Y_sig] - Ypred) / Ypred * 100
-
-    return df.assign(
-        **{
-            f"{Y_sig}_pred": Ypred,
-            f"{Y_sig}_dFF": dFF,
-            f"{Y_sig}_dFF_zscore": stats.zscore(dFF, ddof=1),
-        }
-    )
-
-
 def trial_normalize(df, yvar):
     """
     Compute a normalized yvar from trial-level data.
@@ -287,4 +235,75 @@ def trial_normalize(df, yvar):
     return df.assign(
         dFF_znorm=np.asarray(znorm_vals).flatten(),
         dFF_baseline_norm=np.asarray(bnorm_vals).flatten(),
+    )
+
+
+def get_ols_preds(Y, X):
+    """ Get simple linear regression predictions. """
+    mod = sm.OLS(Y, X).fit()
+    return mod.predict(X)
+
+
+def fit_linear(df, Y_sig="465nm", Y_ref="405nm", by_trial=False, debleached=False):
+
+    df = df.copy()
+    if by_trial:
+        assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
+        new_cols = [
+            x for x in df.columns.to_list() if "nm_" not in x and "dFF" not in x
+        ]
+        df = df[new_cols].copy()
+        Ypred = []
+        for trial in df["Trial"].unique():
+            X = df.loc[df["Trial"] == trial, Y_ref].values
+            Y = df.loc[df["Trial"] == trial, Y_sig].values
+            Ypred.extend(get_ols_preds(Y, X))
+    else:
+        Ypred = get_ols_preds(Y=df[Y_sig], X=df[Y_ref])
+
+    if debleached:
+        dFF = df[Y_sig] - Ypred
+    else:
+        dFF = df[Y_sig] - Ypred / Ypred * 100
+
+    return df.assign(
+        **{
+            f"{Y_sig}_pred": Ypred,
+            f"{Y_sig}_dFF": dFF,
+            f"{Y_sig}_dFF_zscore": stats.zscore(dFF, ddof=1),
+        }
+    )
+
+
+def biexponential(x, a, b, c, d):
+    return a * np.exp(b * x) + c * np.exp(d * x)
+
+
+def fit_biexponential(df, t, y):
+
+    popt, _ = curve_fit(biexponential, df[t], df[y], p0=(0.5, 0, 0.5, 0), maxfev=10000)
+    biexp = biexponential(df[t], *popt)
+
+    return biexp
+
+
+def debleach_signals(df, Y_ref="405nm", Y_sig="465nm", by_trial=False):
+
+    df = df.copy()
+
+    if by_trial:
+        assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
+        ref_biexp = []
+        sig_biexp = []
+        for trial in df["Trial"].unique():
+            df_trial = df.query("Trial == @trial")
+            ref_biexp.extend(fit_biexponential(df_trial, t="time_trial", y=Y_ref))
+            sig_biexp.extend(fit_biexponential(df_trial, t="time_trial", y=Y_sig))
+
+    else:
+        ref_biexp = fit_biexponential(df, t="time", y=Y_ref)
+        sig_biexp = fit_biexponential(df, t="time", y=Y_sig)
+
+    return df.assign(ref_debleach=df[Y_ref] - ref_biexp).assign(
+        sig_debleach=df[Y_sig] - sig_biexp
     )

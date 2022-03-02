@@ -5,7 +5,10 @@ from .preprocess.fp_data import (
     resample_data,
     get_ols_preds,
     fit_linear,
+    debleach_signals,
     trial_normalize,
+    debleach_signal,
+    fit_biexponential,
 )
 
 from .preprocess.expt_config import (
@@ -14,7 +17,12 @@ from .preprocess.expt_config import (
     update_expt_config,
 )
 
-from .preprocess.tfc_data import make_tfc_comp_times, tfc_trials_df, trials_df
+from .preprocess.tfc_data import (
+    make_tfc_comp_times,
+    get_tfc_trial_data,
+    tfc_trials_df,
+    trials_df,
+)
 
 from .plotting.fp_viz import (
     plot_raw_data,
