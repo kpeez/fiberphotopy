@@ -9,5 +9,12 @@ setup(
     packages=find_packages(where="fiberphotopy"),
     package_dir={"": "fiberphotopy"},
     scripts={},
-    install_requires=["pandas", "numpy", "matplotlib", "seaborn"],
+    install_requires=[
+        "pandas",
+        "numpy",
+        "scipy",
+        "matplotlib",
+        "seaborn",
+        "statsmodels",
+    ],
 )
