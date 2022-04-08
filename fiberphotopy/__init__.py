@@ -7,7 +7,6 @@ from .preprocess.fp_data import (
     fit_linear,
     debleach_signals,
     trial_normalize,
-    debleach_signal,
     fit_biexponential,
 )
 
@@ -21,7 +20,6 @@ from .preprocess.tfc_data import (
     make_tfc_comp_times,
     get_tfc_trial_data,
     tfc_trials_df,
-    trials_df,
 )
 
 from .plotting.fp_viz import (
