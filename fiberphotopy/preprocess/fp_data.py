@@ -247,6 +247,7 @@ def get_ols_preds(Y, X):
 def fit_linear(df, Y_sig="465nm", Y_ref="405nm", by_trial=False, debleached=False):
 
     df = df.copy()
+
     if by_trial:
         assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
         new_cols = [
@@ -264,7 +265,7 @@ def fit_linear(df, Y_sig="465nm", Y_ref="405nm", by_trial=False, debleached=Fals
     if debleached:
         dFF = df[Y_sig] - Ypred
     else:
-        dFF = df[Y_sig] - Ypred / Ypred * 100
+        dFF = (df[Y_sig] - Ypred) / Ypred * 100
 
     return df.assign(
         **{
