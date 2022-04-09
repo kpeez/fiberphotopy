@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from plotting.fp_viz_utils import style_plot
 import seaborn as sns
 from plotting.fp_viz_utils import savefig, check_ax, set_trialavg_aes
+from preprocess.fp_data import smooth_trial_data
 
 # define color palette:
 kp_pal = [
@@ -161,7 +162,6 @@ def fp_traces_panel(
     3. dFF values from fit_linear()
     """
     yiso = "405nm"
-    # yvar_col = kp_pal[4]
 
     for idx in df["Animal"].unique():
         # subset individual animal to plot
@@ -220,8 +220,9 @@ def plot_trial_avg(
     df,
     hue=None,
     title=None,
-    yvar="dFF_znorm",
+    yvar="dFF_baseline_norm",
     xvar="time_trial",
+    smooth=True,
     cs_dur=20,
     us_del=40,
     us_dur=2,
@@ -237,6 +238,12 @@ def plot_trial_avg(
     # initialize the plot and apply trialavg formatting
     ax = check_ax(ax, figsize=fig_size)
     set_trialavg_aes(ax, title, cs_dur, us_del, us_dur)
+    kwargs["lw"] = 4
+
+    if smooth:
+        # Smooth data with LOESS for plotting
+        df = smooth_trial_data(df, yvar=yvar)
+        yvar = "dFF_smooth"
 
     if hue:
         hue_means = df.groupby([xvar, hue]).mean().reset_index()
