@@ -203,6 +203,30 @@ def load_session_data(
     return df
 
 
+def smooth_subject_trials(df, yvar="dFF_baseline_norm", _smooth_factor=0.025):
+    lowess = sm.nonparametric.lowess
+    dff_smooth = []
+    for trial in df["Trial"].unique():
+        df_trial = df.query("Trial == @trial")
+        x = df_trial["time_trial"].values
+        y = df_trial[yvar].values
+        mod_smooth = lowess(y, x, frac=_smooth_factor, return_sorted=False)
+        dff_smooth.extend(mod_smooth)
+
+    return df.assign(dFF_smooth=dff_smooth)
+
+
+def smooth_trial_data(df, yvar, smooth_factor=0.025):
+    smooth_data_list = []
+    for subject in df["Animal"].unique():
+        df_subj = df.query("Animal == @subject ")
+        smooth_data_list.append(
+            smooth_subject_trials(df_subj, yvar=yvar, _smooth_factor=smooth_factor)
+        )
+
+    return pd.concat(smooth_data_list)
+
+
 def trial_normalize(df, yvar):
     """
     Compute a normalized yvar from trial-level data.
@@ -305,6 +329,6 @@ def debleach_signals(df, Y_ref="405nm", Y_sig="465nm", by_trial=False):
         ref_biexp = fit_biexponential(df, t="time", y=Y_ref)
         sig_biexp = fit_biexponential(df, t="time", y=Y_sig)
 
-    return df.assign(ref_debleach=df[Y_ref] - ref_biexp).assign(
-        sig_debleach=df[Y_sig] - sig_biexp
+    return df.assign(
+        ref_debleach=df[Y_ref] - ref_biexp, sig_debleach=df[Y_sig] - sig_biexp
     )
