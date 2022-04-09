@@ -216,4 +216,3 @@ def tfc_trials_df(
         df_list.append(trial_normalize(df_animal, yvar=yvar))
 
     return pd.concat(df_list)
-
