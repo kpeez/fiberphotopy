@@ -117,6 +117,11 @@ def apply_plot_style(ax, style_args=None, **kwargs):
         pad=kwargs.pop("pad", LABEL_PAD),
         labelsize=kwargs.pop("tick_labelsize", TICK_LABELSIZE),
     )
+    # adjust spines
+    for axis in ["top", "right"]:
+        ax.spines[axis].set_visible(False)
+    for axis in ["left", "bottom"]:
+        ax.spines[axis].set_linewidth(3)
     # if legend labels get duplicated, pick the original ones
     if ax.get_legend_handles_labels()[0]:
         handles, labels = ax.get_legend_handles_labels()
@@ -198,7 +203,7 @@ def set_trialavg_aes(ax, title=None, cs_dur=20, us_del=40, us_dur=2):
     xlab = "Time from cue onset (s)"
     tick_size = 22
     label_size = 28
-    ax.tick_params(labelsize=tick_size, width=1, length=8)
+    ax.tick_params(width=3, length=10, labelsize=tick_size)
     ax.set_ylabel(ylab, size=label_size)
     ax.set_xlabel(xlab, size=label_size)
 
