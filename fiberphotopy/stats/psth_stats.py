@@ -55,5 +55,5 @@ def pre_post_stats(df_prepost, yvar="465nm_dFF_znorm", return_values=False):
     """
     pre = df_prepost.loc[df_prepost["epoch"].str.contains("pre"), yvar]
     post = df_prepost.loc[df_prepost["epoch"].str.contains("post"), yvar]
-    
+
     return pg.ttest(pre, post, paired=True)
