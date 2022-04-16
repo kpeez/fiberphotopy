@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from preprocess.fp_data import fit_linear, trial_normalize, save_data, debleach_signals
+from .fp_data import fit_linear, trial_normalize, save_data, debleach_signals
 
 
 def make_tfc_comp_times(n_trials, baseline, cs_dur, trace_dur, us_dur, iti_dur):
