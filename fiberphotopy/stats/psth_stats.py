@@ -1,6 +1,6 @@
 """ Code for PSTH-related statistical analysis."""
 import pandas as pd
-from scipy import stats
+import pingouin as pg
 
 # functions for:
 # pre-post t-test (pinguin? scipy?)
@@ -55,9 +55,5 @@ def pre_post_stats(df_prepost, yvar="465nm_dFF_znorm", return_values=False):
     """
     pre = df_prepost.loc[df_prepost["epoch"].str.contains("pre"), yvar]
     post = df_prepost.loc[df_prepost["epoch"].str.contains("post"), yvar]
-    tstat, pval = stats.ttest_rel(pre, post)
-
-    print(f" t-statistic: {tstat} \n p-value: {pval}")
-
-    if return_values:
-        return (tstat, pval)
+    
+    return pg.ttest(pre, post, paired=True)
