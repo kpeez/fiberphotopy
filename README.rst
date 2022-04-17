@@ -1,6 +1,3 @@
-.. role:: raw-latex(raw)
-   :format: latex
-
 fiberphotopy
 ============
 
@@ -16,12 +13,18 @@ Import the package as follows:
 Installation
 ------------
 
-The easiest way to install fiberphotopy is with ``pip``. Open your
-terminal and enter the following:
+The easiest way to install fiberphotopy is with ``pip``. 
+First, clone the repository.
 
 .. code:: bash
 
-   python -m pip install git+https://github.com/kpuhger/fiberphotopy.git 
+   git clone https://github.com/kpuhger/fiberphotopy.git
+
+Next, navigate to the cloned repo and type the following into your terminal:
+
+.. code:: bash
+
+   pip install .
 
 Features
 --------
