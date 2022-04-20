@@ -1,10 +1,10 @@
 """ Visualize fiber photometry data."""
 import numpy as np
 import matplotlib.pyplot as plt
-from plotting.fp_viz_utils import style_plot
 import seaborn as sns
-from plotting.fp_viz_utils import savefig, check_ax, set_trialavg_aes
-from preprocess.fp_data import smooth_trial_data
+from .fp_viz_utils import style_plot
+from .fp_viz_utils import savefig, check_ax, set_trialavg_aes
+from ..preprocess.fp_data import smooth_trial_data
 
 # define color palette:
 kp_pal = [
@@ -231,7 +231,7 @@ def plot_trial_avg(
     **kwargs,
 ):
     """
-        Plot trial-averaged dFF signal.
+    Plot trial-averaged dFF signal.
     """
 
     plot_style()
