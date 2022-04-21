@@ -23,7 +23,7 @@ kp_pal = [
 ]  # gray
 
 
-def set_palette(color_pal=None, show=False):
+def set_color_palette(color_pal=None, show=False):
     """Set default color palette."""
     color_pal = kp_pal if color_pal is None else color_pal
     sns.set_palette(color_pal)

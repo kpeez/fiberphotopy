@@ -19,16 +19,6 @@ kp_pal = [
 ]
 
 
-def set_palette(color_pal=None, show=False):
-    """Set default color palette."""
-    color_pal = kp_pal if color_pal is None else color_pal
-    sns.set_palette(color_pal)
-    if show:
-        sns.palplot(color_pal)
-    else:
-        return color_pal
-
-
 def plot_style(figure_size=None):
     """Set default plot style."""
     figure_size = figure_size if figure_size else [30, 20]
