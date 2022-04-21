@@ -89,7 +89,13 @@ def label_tfc_phases(df, session="train"):
 
 
 def get_tfc_trial_data(
-    df, session, trial_start, cs_dur, trace_dur, us_dur, iti_dur,
+    df,
+    session,
+    trial_start,
+    cs_dur,
+    trace_dur,
+    us_dur,
+    iti_dur,
 ):
 
     """

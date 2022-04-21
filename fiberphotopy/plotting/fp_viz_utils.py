@@ -1,4 +1,7 @@
-""" Utilities for plotting functions."""
+"""
+Functions and utilities to apply aesthetic styling to plots.
+Modified from neuroDSP: https://github.com/neurodsp-tools/neurodsp/tree/master/neurodsp/plts
+"""
 import datetime
 import inspect
 from pathlib import Path
@@ -30,9 +33,9 @@ def set_palette(color_pal=None, show=False):
         return color_pal
 
 
-def check_ax(ax, figsize=None):
+def _make_ax(ax, figsize=None):
     """
-    Check whether a figure axes object is defined, define if not.
+    Make a matplotlib.Axes object if one is not provided.
 
     Args:
         ax (matplotlib.Axes or None): Axes object to check if is defined.
@@ -73,49 +76,49 @@ def savefig(func):
     return decorated
 
 
-AXIS_STYLE_ARGS = ["title", "xlabel", "ylabel", "xlim", "ylim"]
-# Custom style arguments are those that are custom-handled by the plot style function
-CUSTOM_STYLE_ARGS = [
-    "title_fontsize",
-    "label_size",
-    "labelpad",
-    "tick_labelsize",
-    "legend_size",
-    "legend_loc",
-    "markerscale",
-]
-STYLE_ARGS = AXIS_STYLE_ARGS + CUSTOM_STYLE_ARGS
-# Define default values for aesthetic
-# These are all custom style arguments
-TITLE_FONTSIZE = 48
-LABEL_PAD = 8
-LABEL_SIZE = 24
-TICK_LABELSIZE = 24
-LEGEND_SIZE = 24
-LEGEND_LOC = "best"
-MARKERSCALE = 1
+custom_style_dict = {
+    "title_fontsize": 48,
+    "label_size": 24,
+    "labelpad": 8,
+    "tick_labelsize": 24,
+    "legend_size": 24,
+    "legend_loc": "best",
+    "markerscale": 1,
+}
+
+plot_style_args = ["title", "xlabel", "ylabel", "xlim", "ylim"] + list(
+    custom_style_dict.keys()
+)
 
 
 def apply_plot_style(ax, style_args=None, **kwargs):
     """
     Apply custom plot style. Used to set default plot options
     """
-    style_args = style_args if style_args else AXIS_STYLE_ARGS
+    style_args = (
+        style_args
+        if style_args
+        else [i for i in plot_style_args if i not in custom_style_dict.keys()]
+    )
     # Apply any provided axis style arguments
     plot_kwargs = {key: val for key, val in kwargs.items() if key in style_args}
     ax.set(**plot_kwargs)
     # update title size
     if ax.get_title():
-        ax.set_title(ax.get_title(), fontdict={"fontsize": TITLE_FONTSIZE}, pad=12)
+        ax.set_title(
+            ax.get_title(),
+            fontdict={"fontsize": custom_style_dict["title_fontsize"]},
+            pad=12,
+        )
     # Settings for the axis labels and ticks
-    label_size = kwargs.pop("label_size", LABEL_SIZE)
+    label_size = kwargs.get("label_size", custom_style_dict["label_size"])
     ax.xaxis.label.set_size(label_size * 0.75)
     ax.yaxis.label.set_size(label_size)
     ax.tick_params(
         axis="both",
         which="major",
-        pad=kwargs.pop("pad", LABEL_PAD),
-        labelsize=kwargs.pop("tick_labelsize", TICK_LABELSIZE),
+        pad=kwargs.get("pad", custom_style_dict["labelpad"]),
+        labelsize=kwargs.get("tick_labelsize", custom_style_dict["tick_labelsize"]),
     )
     # adjust spines
     for axis in ["top", "right"]:
@@ -131,9 +134,9 @@ def apply_plot_style(ax, style_args=None, **kwargs):
             handles[first_handle:nhandles],
             labels[first_handle:nhandles],
             frameon=False,
-            prop={"size": kwargs.pop("legend_size", LEGEND_SIZE)},
-            loc=kwargs.pop("legend_loc", LEGEND_LOC),
-            markerscale=kwargs.pop("markerscale", MARKERSCALE),
+            prop={"size": kwargs.get("legend_size", custom_style_dict["legend_size"])},
+            loc=kwargs.get("legend_loc", custom_style_dict["legend_loc"]),
+            markerscale=kwargs.get("markerscale", custom_style_dict["markerscale"]),
         )
 
     plt.tight_layout()
@@ -149,20 +152,15 @@ def style_plot(func, *args, **kwargs):  # pylint: disable=unused-argument
             These should include any arguments for the plot, and those for applying plot style.
     """
 
-    def get_default_args(func):
-        """
-        returns a dictionary of arg_name: default_values for the input function
-        """
-        argspec = inspect.getfullargspec(func)
-        return dict(zip(reversed(argspec.args), reversed(argspec.defaults)))
-
     @wraps(func)
     def decorated(*args, **kwargs):
         # Grab any provided style arguments
-        style_args = kwargs.pop("style_args", STYLE_ARGS)
-        kwargs_local = get_default_args(func)
+        style_args = kwargs.get("style_args", plot_style_args)
+        # Get args from input function
+        argspec = inspect.getfullargspec(func)
+        kwargs_local = dict(zip(reversed(argspec.args), reversed(argspec.defaults)))
         kwargs_local.update(kwargs)
-        style_kwargs = {key: kwargs.pop(key) for key in style_args if key in kwargs}
+        style_kwargs = {key: kwargs.get(key) for key in style_args if key in kwargs}
         # Create the plot
         func(*args, **kwargs)
         # Get plot axis, if a specific one was provided, or just grab current and apply style

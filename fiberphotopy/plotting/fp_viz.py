@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from .fp_viz_utils import style_plot
-from .fp_viz_utils import savefig, check_ax, set_trialavg_aes
+from .fp_viz_utils import savefig, _make_ax, set_trialavg_aes
 from ..preprocess.fp_data import smooth_trial_data
 
 # define color palette:
@@ -68,7 +68,8 @@ def plot_raw_data(
     ax=None,
     **kwargs,
 ):
-    ax = check_ax(ax)
+    """Plot raw data (`yvar` and `yiso`) over time interval specified in `xvar`."""
+    ax = _make_ax(ax)
     X = df_plot.loc[:, xvar]
     Y = df_plot.loc[:, yvar]
     Yiso = df_plot.loc[:, yiso]
@@ -88,7 +89,8 @@ def plot_dff_data(
     ax=None,
     **kwargs,
 ):
-    ax = check_ax(ax)
+    """Plot dFF data over time interval specified in `xvar`."""
+    ax = _make_ax(ax)
     # plot dFF
     X = df_plot.loc[:, xvar]
     Ydff = df_plot.loc[:, yvar + "_" + dffvar]
@@ -110,6 +112,19 @@ def plot_fp_session(
     fig_size=(20, 10),
     **kwargs,
 ):
+    """
+    Generate a 2-panel plot of data fiber photometry recording session.
+
+    Args:
+        df (DataFrame): session data to plot. Can contain several
+        yvar (str, optional): Column name of . Defaults to "465nm".
+        yiso (str, optional): _description_. Defaults to "405nm".
+        dffvar (str, optional): _description_. Defaults to "dFF".
+        xvar (str, optional): _description_. Defaults to "time".
+        session (str, optional): _description_. Defaults to "Training".
+        Yiso (bool, optional): _description_. Defaults to True.
+        fig_size (tuple, optional): _description_. Defaults to (20, 10).
+    """
     # plot session for each subject
     @savefig
     def _session_plot(
@@ -218,25 +233,39 @@ def fp_traces_panel(
 @style_plot
 def plot_trial_avg(
     df,
-    hue=None,
-    title=None,
     yvar="dFF_baseline_norm",
     xvar="time_trial",
+    hue=None,
     smooth=True,
     cs_dur=20,
     us_del=40,
     us_dur=2,
+    title=None,
     fig_size=(12, 8),
     ax=None,
     **kwargs,
 ):
     """
     Plot trial-averaged dFF signal.
+
+    Args:
+        df (DataFrame): Trial-level data to visualize.
+        yvar (str): Dependent variable to plot. Defaults to "dFF_baseline_norm".
+        xvar (str): Name of variable with trial time bins. Defaults to "time_trial".
+        hue (str): Specify distinct groups for separate trial-average plots. Defaults to None.
+        smooth (bool, optional): Use loess to smooth the data. Defaults to True.
+        cs_dur (int): Duration of CS in seconds. Defaults to 20.
+        us_del (int): Time of US delivery relative to CS onset. Defaults to 40.
+        us_dur (int): Duration of the US in seconds. Defaults to 2.
+        title (str, optional): Name of figure. Defaults to None.
+        fig_size (tuple, optional): Figure size. Defaults to (12, 8).
+        ax (matplotlib.axes.Axes, optional): Specify axes object to add plot to. Defaults to None.
+                                             If `None` is provided, `_make_ax` is called.
     """
 
     plot_style()
     # initialize the plot and apply trialavg formatting
-    ax = check_ax(ax, figsize=fig_size)
+    ax = _make_ax(ax, figsize=fig_size)
     set_trialavg_aes(ax, title, cs_dur, us_del, us_dur)
     kwargs["lw"] = 4
 
@@ -288,6 +317,7 @@ def plot_trial_avg(
 def plot_trial_indiv(
     df,
     yvar="dFF_znorm",
+    xvar="time_trial",
     subplot_params=(3, 4),
     fig_size=(32, 24),
     suptitle=None,
@@ -296,6 +326,14 @@ def plot_trial_indiv(
     """
     Generate trial-by-trial plot averaged across subjects.
     Users can control the shape of the suplots by passing a tuple into subplot_params.
+
+    Args:
+        df (DataFrame): Trial-level data to plot.
+        yvar (str): Dependent variable to plot. Defaults to "dFF_znorm".
+        xvar (str): Name of variable with trial time bins. Defaults to "time_trial".
+        subplot_params (tuple, optional): Dimensions of suplot panels specified row x col. Defaults to (3, 4).
+        fig_size (tuple, optional): Figure size. Defaults to (32, 24).
+        suptitle (str, optional): Figure title. Defaults to None.
     """
     fig, axs = plt.subplots(
         subplot_params[0], subplot_params[1], figsize=fig_size, sharey=False
@@ -305,7 +343,9 @@ def plot_trial_indiv(
     for i, ax in enumerate(axs.reshape(-1)):
         if i + 1 <= max(df["Trial"]):
             single_trial = df.loc[df["Trial"] == i + 1, :]
-            plot_trial_avg(single_trial, yvar, ax=ax, title=f"Trial {i+1}", **kwargs)
+            plot_trial_avg(
+                single_trial, yvar, xvar, ax=ax, title=f"Trial {i+1}", **kwargs
+            )
         else:
             fig.delaxes(ax)
     if suptitle:
