@@ -26,6 +26,17 @@ terminal:
 pip install .
 ```
 
+**Note:** The installation method currently is not likely to work.
+For the time being it is recommended to add a .pth file to your `site-packages` folder to add the repo to your system's path.
+
+1. Use the terminal to navigate to your `site-packages` folder (e.g., `cd opt/miniconda3/lib/python3.10/site-packages`)
+2. Add `.pth` file pointing to repo path
+
+    ```{.bash}
+    > touch `fiberphotopy.pth` # create pth file
+    > open `fiberphotopy.pth` # add fiberphotopy path to file
+    ```
+
 ## Features
 
 ### Loading data
