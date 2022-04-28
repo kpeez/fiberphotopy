@@ -78,7 +78,7 @@ def savefig(func):
 
 custom_style_dict = {
     "title_fontsize": 48,
-    "label_size": 24,
+    "label_size": 36,
     "labelpad": 8,
     "tick_labelsize": 24,
     "legend_size": 24,
@@ -111,14 +111,14 @@ def apply_plot_style(ax, style_args=None, **kwargs):
             pad=12,
         )
     # Settings for the axis labels and ticks
-    label_size = kwargs.get("label_size", custom_style_dict["label_size"])
+    label_size = kwargs.pop("label_size", custom_style_dict["label_size"])
     ax.xaxis.label.set_size(label_size * 0.75)
     ax.yaxis.label.set_size(label_size)
     ax.tick_params(
         axis="both",
         which="major",
-        pad=kwargs.get("pad", custom_style_dict["labelpad"]),
-        labelsize=kwargs.get("tick_labelsize", custom_style_dict["tick_labelsize"]),
+        pad=kwargs.pop("pad", custom_style_dict["labelpad"]),
+        labelsize=kwargs.pop("tick_labelsize", custom_style_dict["tick_labelsize"]),
     )
     # adjust spines
     for axis in ["top", "right"]:
@@ -134,9 +134,9 @@ def apply_plot_style(ax, style_args=None, **kwargs):
             handles[first_handle:nhandles],
             labels[first_handle:nhandles],
             frameon=False,
-            prop={"size": kwargs.get("legend_size", custom_style_dict["legend_size"])},
-            loc=kwargs.get("legend_loc", custom_style_dict["legend_loc"]),
-            markerscale=kwargs.get("markerscale", custom_style_dict["markerscale"]),
+            prop={"size": kwargs.pop("legend_size", custom_style_dict["legend_size"])},
+            loc=kwargs.pop("legend_loc", custom_style_dict["legend_loc"]),
+            markerscale=kwargs.pop("markerscale", custom_style_dict["markerscale"]),
         )
 
     plt.tight_layout()
@@ -155,12 +155,12 @@ def style_plot(func, *args, **kwargs):  # pylint: disable=unused-argument
     @wraps(func)
     def decorated(*args, **kwargs):
         # Grab any provided style arguments
-        style_args = kwargs.get("style_args", plot_style_args)
+        style_args = kwargs.pop("style_args", plot_style_args)
         # Get args from input function
         argspec = inspect.getfullargspec(func)
         kwargs_local = dict(zip(reversed(argspec.args), reversed(argspec.defaults)))
         kwargs_local.update(kwargs)
-        style_kwargs = {key: kwargs.get(key) for key in style_args if key in kwargs}
+        style_kwargs = {key: kwargs.pop(key) for key in style_args if key in kwargs}
         # Create the plot
         func(*args, **kwargs)
         # Get plot axis, if a specific one was provided, or just grab current and apply style

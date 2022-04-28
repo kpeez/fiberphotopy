@@ -199,7 +199,6 @@ def load_session_data(
             for key in subject_dict:
                 subj_rows = df["Animal"].str.contains(key)
                 df.loc[subj_rows, "Animal"] = subject_dict[key]
-
     return df
 
 

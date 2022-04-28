@@ -331,7 +331,7 @@ def plot_trial_indiv(
     xticks = np.arange(int(min(df["time_trial"])), int(max(df["time_trial"])), step=20)
     plt.setp(axs, xticks=xticks, xticklabels=xticks)
     for i, ax in enumerate(axs.reshape(-1)):
-        if i + 1 <= max(df["Trial"]):
+        if i + 1 <= df["Trial"].max():
             single_trial = df.loc[df["Trial"] == i + 1, :]
             plot_trial_avg(
                 single_trial, yvar, xvar, ax=ax, title=f"Trial {i+1}", **kwargs
