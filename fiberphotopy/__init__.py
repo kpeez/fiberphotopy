@@ -32,4 +32,6 @@ from .plotting.fp_viz import (
     plot_trial_heatmap,
 )
 
+from .plotting.fp_viz_utils import set_color_palette, set_trialavg_aes
+
 from .stats.psth_stats import calc_pre_post, pre_post_stats
