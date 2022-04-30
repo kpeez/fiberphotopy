@@ -379,3 +379,28 @@ def plot_trial_heatmap(df, yvar="dFF_znorm", fig_size=(32, 6), label_size=16, **
     xloc = np.arange(0, len(df_group_agg.columns), 50)
     xlabs = np.arange(int(xmin), int(xmax), 5)
     plt.xticks(xloc, xlabs)
+
+
+def plot_trial_signals(
+    trials_df,
+    subject,
+    trial,
+    signals,
+    cs_dur=20,
+    us_del=40,
+    us_dur=2,
+):
+
+    trial_data = trials_df.query("Animal == @subject and Trial == @trial")
+
+    fig, ax = plt.subplots(1, 1, figsize=(12, 10))
+    set_trialavg_aes(ax, None, cs_dur, us_del, us_dur)
+
+    for sig in signals:
+        sig_centered = trial_data[sig] - trial_data[sig].mean()
+        ax.plot(trial_data["time_trial"], sig_centered, label=sig)
+
+    ax.set_title(f"Subject: {subject} Trial: {trial}", pad=20)
+    ax.set_ylabel("Fluorescence (au)")
+    ax.legend(fontsize=24)
+    plt.tight_layout()
