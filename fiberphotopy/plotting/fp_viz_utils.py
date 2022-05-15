@@ -77,7 +77,7 @@ def savefig(func):
 
 
 custom_style_dict = {
-    "title_fontsize": 48,
+    "title_fontsize": 36,
     "label_size": 36,
     "labelpad": 8,
     "tick_labelsize": 24,

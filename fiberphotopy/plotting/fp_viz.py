@@ -304,7 +304,7 @@ def plot_trial_avg(
 
 @savefig
 @style_plot
-def plot_trial_indiv(
+def plot_trial_subplot(
     df,
     yvar="dFF_znorm",
     xvar="time_trial",
@@ -381,7 +381,7 @@ def plot_trial_heatmap(df, yvar="dFF_znorm", fig_size=(32, 6), label_size=16, **
     plt.xticks(xloc, xlabs)
 
 
-def plot_trial_signals(
+def plot_single_trial(
     trials_df,
     subject,
     trial,

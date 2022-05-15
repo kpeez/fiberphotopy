@@ -28,7 +28,8 @@ from .plotting.fp_viz import (
     plot_fp_session,
     fp_traces_panel,
     plot_trial_avg,
-    plot_trial_indiv,
+    plot_trial_subplot,
+    plot_single_trial,
     plot_trial_heatmap,
 )
 
