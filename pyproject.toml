@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "fiberphotopy"
-version = "0.2.1"
+version = "0.2.2"
 description = "Package for loading and processing fiber photometry data"
 authors = ["kpuhger <krpuhger@gmail.com>"]
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/kpuhger/fiberphotopy"
+
 
 [tool.poetry.dependencies]
 python = ">=3.9, <3.11"
@@ -20,6 +23,7 @@ pingouin = "^0.5.2"
 black = "^22.6.0"
 isort = "^5.10.1"
 flake8 = "^4.0.1"
+pytest = "^7.1.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
