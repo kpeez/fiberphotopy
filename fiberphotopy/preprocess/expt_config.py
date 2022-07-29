@@ -1,13 +1,15 @@
 """Code for making expt_config files to describe experimental info."""
 import pathlib
 from pathlib import Path
+
 import yaml
-from ruamel.yaml.main import round_trip_load as yaml_load, round_trip_dump as yaml_dump
+from ruamel.yaml.main import round_trip_dump as yaml_dump
+from ruamel.yaml.main import round_trip_load as yaml_load
 
 
 def create_expt_config(expt_name=None, config_name=None, project_path=None):
     """
-    Setup and create experiment configuration files.
+    Create experiment configuration files.
 
     Args:
         project_name (str): Project name stored in expt_config["project_name"]
@@ -22,14 +24,12 @@ def create_expt_config(expt_name=None, config_name=None, project_path=None):
     config_file = config_filename + ".yml"
     project_path = project_path if project_path else Path.cwd()
     # test project_path type
-    assert (
-        isinstance(project_path, pathlib.PurePath) or type(project_path) == str
+    assert isinstance(project_path, pathlib.PurePath) or isinstance(
+        project_path, str
     ), "project path must be a str or Path object"
     # test config_filename exists
     for f in list(project_path.glob("*.y*ml")):
-        assert (
-            f.stem != config_filename
-        ), f"Warning! {config_filename} file already exists"
+        assert f.stem != config_filename, f"Warning! {config_filename} file already exists"
     # create dirs
     for d in ["figures", "data/raw", "data/processed"]:
         Path(str(project_path) + "/" + d).mkdir(parents=True, exist_ok=True)
@@ -63,8 +63,7 @@ def create_expt_config(expt_name=None, config_name=None, project_path=None):
 
 def load_expt_config(config_path):
     """
-    Load expt_info.yml to obtain project_path, raw_data_path, fig_path,
-    and dict containing any group info.
+    Load expt_info.yml to obtain project_path, raw_data_path, fig_path, and dict of group info.
 
     Args:
         config_path (str): Path to YAML project file
@@ -87,8 +86,8 @@ def load_expt_config(config_path):
 
 def update_expt_config(expt_config, config_filename, update_dict):
     """
-    Update an expt_config with information provided in update_dict. The keys
-    in update_dict should be identical to expt_config.
+    Update an expt_config with information provided in update_dict.
+    The keys in update_dict should be identical to expt_config.
 
     Args:
         expt_config (dict): expt_config.yml file

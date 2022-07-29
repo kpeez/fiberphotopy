@@ -1,11 +1,27 @@
+"""Process TFC data."""
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from .fp_data import fit_linear, trial_normalize, save_data, debleach_signals
+
+from .fp_data import debleach_signals, fit_linear, save_data, trial_normalize
 
 
 def make_tfc_comp_times(n_trials, baseline, cs_dur, trace_dur, us_dur, iti_dur):
+    """
+    Create component times instead of loading from file.
 
+    Args:
+        n_trials (int): number of trials
+        baseline (int): duration of baseline periond (in seconds).
+        cs_dur (int): CS duration (in seconds).
+        trace_dur (int): Trace interval duration (in seconds).
+        us_dur (int): Duration of US (in seconds).
+        iti_dur (int): Duration of ITI (in seconds).
+
+    Returns:
+        DataFrame: Component times
+    """
     comp_times = []
     session_time = 0
     comp_times.append(["baseline", baseline, 0, baseline])
@@ -13,18 +29,14 @@ def make_tfc_comp_times(n_trials, baseline, cs_dur, trace_dur, us_dur, iti_dur):
     for t in range(n_trials):
         comp_times.append([f"tone-{t+1}", cs_dur, session_time, session_time + cs_dur])
         session_time += cs_dur
-        comp_times.append(
-            [f"trace-{t+1}", trace_dur, session_time, session_time + trace_dur]
-        )
+        comp_times.append([f"trace-{t+1}", trace_dur, session_time, session_time + trace_dur])
         session_time += trace_dur
         comp_times.append([f"shock-{t+1}", us_dur, session_time, session_time + us_dur])
         session_time += us_dur
         comp_times.append([f"iti-{t+1}", iti_dur, session_time, session_time + iti_dur])
         session_time += iti_dur
 
-    comp_times_df = pd.DataFrame(
-        comp_times, columns=["component", "duration", "start", "end"]
-    )
+    comp_times_df = pd.DataFrame(comp_times, columns=["component", "duration", "start", "end"])
 
     # clean up component times df for trial order
     new_comps = ["baseline"]
@@ -42,7 +54,15 @@ def make_tfc_comp_times(n_trials, baseline, cs_dur, trace_dur, us_dur, iti_dur):
 
 
 def load_tfc_comp_times(session="train"):
+    """
+    Load TFC phase components.xlsx from /docs.
 
+    Args:
+        session (str, optional): Name of session to load. Defaults to "train".
+
+    Returns:
+        DataFrame: Component data frame.
+    """
     doc_dir = Path(__file__).parents[2] / "docs"
     component_label_file = "TFC phase components.xlsx"
 
@@ -51,6 +71,16 @@ def load_tfc_comp_times(session="train"):
 
 def find_tfc_components(df, session="train"):
     # TODO: Test function
+    """
+    Find TFC components from TFC phase components.xlsx file.
+
+    Args:
+        df (DataFrame): DataFrame to get components for
+        session (str, optional): Session to get components from. Defaults to "train".
+
+    Returns:
+        DataFrame: Data with component labels added.
+    """
     comp_labs = load_tfc_comp_times(session=session)
     session_end = max(comp_labs["end"])
     df_new = df.drop(df[df["time"] >= session_end].index)
@@ -67,6 +97,16 @@ def find_tfc_components(df, session="train"):
 
 def label_tfc_phases(df, session="train"):
     # TODO: Test function
+    """
+    Label TFC phases using TFC components. "Phases" are simply aggregated components of same type.
+
+    Args:
+        df (DataFrame): DataFrame to label.
+        session (str, optional): Session to label phases. Defaults to "train".
+
+    Returns:
+        DataFrame: Data with Phase labels added.
+    """
     session_list = [
         "train",
         "tone",
@@ -97,9 +137,8 @@ def get_tfc_trial_data(
     us_dur,
     iti_dur,
 ):
-
     """
-    1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each CS onset
+    1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each CS onset.
     2. Normalizes dFF for each trial to the avg dFF of each trial's pre-CS period.
 
     ! Note: Session must be a sheet name in 'TFC phase components.xlsx'
@@ -119,7 +158,6 @@ def get_tfc_trial_data(
     Returns:
         DataFrame: Trial-level data with `yvar` trial-normalized.
     """
-
     df = label_tfc_phases(df, session=session)
     comp_labs = load_tfc_comp_times(session=session)
 
@@ -129,9 +167,7 @@ def get_tfc_trial_data(
         if "tone" in comp_labs["component"][tone]
     ]
     iti_idx = [
-        iti
-        for iti in range(len(comp_labs["component"]))
-        if "iti" in comp_labs["component"][iti]
+        iti for iti in range(len(comp_labs["component"])) if "iti" in comp_labs["component"][iti]
     ]
     # determine number of tone trials from label
     n_trials = len(tone_idx)
@@ -175,7 +211,7 @@ def tfc_trials_df(
     iti_dur=120,
 ):
     """
-    1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each cue onset
+    1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each cue onset.
     2. Normalizes dFF for each trial to the avg dFF of each trial's baseline period (pre-cue).
 
     Args:
@@ -183,16 +219,15 @@ def tfc_trials_df(
         session (str): Name of session used to label DataFrame. Defaults to "train".
         yvar (str): Name of dependent variable to trial-normalize. Defaults to "465nm_dFF".
         trial_dff (bool, optional): Fit trial_dFF on each trial. Defaults to False.
-        trial_debleach (bool, optional): Fit  biexponential on each trial to debleach. Defaults to False.
+        trial_debleach (bool, optional): Fit biexponential on each trial. Defaults to False.
         trial_start (int): _description_. Defaults to -20.
         cs_dur (int): CS duration used to calculate trial time. Defaults to 20.
-        trace_dur (int): Duration of trace interval. Defaults to 20. Set to 0 for delay conditioning.
+        trace_dur (int): Duration of trace interval. Defaults to 20. Set to 0 for delay FC.
         us_dur (int): Duration of unconditional stimulus. Defaults to 2.
         iti_dur (int): Duration of intertrial interval. Defaults to 120.
 
     Returns:
         DataFrame: Trial-level data with `yvar` trial-normalized.
-
 
     Notes:
     - To use trial-level debleaching, you need to also set trial_dff = True.

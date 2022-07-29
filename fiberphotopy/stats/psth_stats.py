@@ -1,4 +1,4 @@
-""" Code for PSTH-related statistical analysis."""
+"""Code for PSTH-related statistical analysis."""
 import pandas as pd
 import pingouin as pg
 
@@ -35,20 +35,17 @@ def calc_pre_post(df, event, t_pre, t_post, measure="mean"):
     if measure == "mean":
         return df_prepost.groupby(["Animal", "epoch"]).mean().reset_index()
     elif measure == "max":
-        df_prepost = (
-            df_prepost.groupby(["Animal", "time_trial", "epoch"]).mean().reset_index()
-        )
+        df_prepost = df_prepost.groupby(["Animal", "time_trial", "epoch"]).mean().reset_index()
         return df_prepost.groupby(["Animal", "epoch"]).max().reset_index()
 
 
-def pre_post_stats(df_prepost, yvar="465nm_dFF_znorm", return_values=False):
+def pre_post_stats(df_prepost, yvar="465nm_dFF_znorm"):
     """
     Compute a paired t-test for pre and post event.
 
     Args:
         df_prepost (DataFrame): Output of `calc_pre_post`
         yvar (str): Name of dependent variable. Defaults to "465nm_dFF_znorm".
-        return_values (bool, optional): [description]. Defaults to False.
 
     Returns:
         (tstat, pval) (tuple): the t-statistic and the p-value from the paired t-test.
