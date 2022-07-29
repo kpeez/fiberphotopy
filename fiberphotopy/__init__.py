@@ -1,6 +1,11 @@
 """Import fiberphotopy."""
 # flake8: noqa
 
+import importlib
+
+# set version
+__version__ = importlib.metadata.version("fiberphotopy")
+
 from .plotting.fp_viz import (
     fp_traces_panel,
     plot_dff_data,
