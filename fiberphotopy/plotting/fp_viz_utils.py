@@ -4,11 +4,11 @@ Modified from neuroDSP: https://github.com/neurodsp-tools/neurodsp/tree/master/n
 """
 import datetime
 import inspect
-from pathlib import Path
 from functools import wraps
-import seaborn as sns
-import matplotlib.pyplot as plt
+from pathlib import Path
 
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # define color palette:
 kp_pal = [
@@ -51,7 +51,7 @@ def _make_ax(ax, figsize=None):
 
 
 def savefig(func):
-    """Decorator function to save out figures."""
+    """Save figures."""
 
     @wraps(func)
     def decorated(*args, **kwargs):
@@ -86,19 +86,17 @@ custom_style_dict = {
     "markerscale": 1,
 }
 
-plot_style_args = ["title", "xlabel", "ylabel", "xlim", "ylim"] + list(
-    custom_style_dict.keys()
-)
+plot_style_args = ["title", "xlabel", "ylabel", "xlim", "ylim"] + list(custom_style_dict.keys())
 
 
 def apply_plot_style(ax, style_args=None, **kwargs):
-    """
-    Apply custom plot style. Used to set default plot options
-    """
+    """Apply custom plot style. Used to set default plot options."""
     style_args = (
         style_args
         if style_args
-        else [i for i in plot_style_args if i not in custom_style_dict.keys()]
+        else [
+            i for i in plot_style_args if i not in custom_style_dict
+        ]  # removed .keys() from call
     )
     # Apply any provided axis style arguments
     plot_kwargs = {key: val for key, val in kwargs.items() if key in style_args}
@@ -144,7 +142,7 @@ def apply_plot_style(ax, style_args=None, **kwargs):
 
 def style_plot(func, *args, **kwargs):  # pylint: disable=unused-argument
     """
-    Decorator function to make a plot and run apply_plot_style() on it.
+    Make a plot and run apply_plot_style() on it.
 
     Args:
         func (callable): The plotting function for creating a plot.
@@ -194,9 +192,7 @@ def set_trialavg_aes(ax, title=None, cs_dur=20, us_del=40, us_dur=2):
     ax.axvspan(0, cs_dur, facecolor="grey", alpha=0.2)
     # add dashed black rectangle around shock interval
     if us_dur > 0:
-        ax.axvspan(
-            us_del, us_del + us_dur, facecolor="none", edgecolor="black", ls="--"
-        )
+        ax.axvspan(us_del, us_del + us_dur, facecolor="none", edgecolor="black", ls="--")
     ylab = r"Normalized $\Delta F/F %$"
     xlab = "Time from cue onset (s)"
     tick_size = 22

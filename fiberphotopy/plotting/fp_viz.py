@@ -1,10 +1,10 @@
-""" Visualize fiber photometry data."""
-import numpy as np
+"""Visualize fiber photometry data."""
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-from .fp_viz_utils import style_plot
-from .fp_viz_utils import savefig, _make_ax, set_trialavg_aes
+
 from ..preprocess.fp_data import smooth_trial_data
+from .fp_viz_utils import _make_ax, savefig, set_trialavg_aes, style_plot
 
 # define color palette:
 kp_pal = [
@@ -119,13 +119,6 @@ def plot_fp_session(
     @savefig
     def _session_plot(
         df_plot,
-        yvar="465nm",
-        yiso="405nm",
-        dffvar="dFF",
-        xvar="time",
-        session="Training",
-        Yiso=True,
-        fig_size=fig_size,
         **kwargs,
     ):
 
@@ -140,9 +133,7 @@ def plot_fp_session(
 
     for subject in df["Animal"].unique():
         subject_data = df.loc[df["Animal"] == subject, :]
-        _session_plot(
-            subject_data, fig_name=f"{session} - {subject} session plot", **kwargs
-        )
+        _session_plot(subject_data, fig_name=f"{session} - {subject} session plot", **kwargs)
 
 
 @savefig
@@ -158,10 +149,11 @@ def fp_traces_panel(
     y2lim=None,
     y3lim=None,
     fig_size=(24, 12),
-    **kwargs,
 ):
     """
-    Generate a 3-panel plot:
+    Plot raw (centered), predicted, and actual dFF traces.
+
+    Generates a 3-panel plot with the following panels:
     1. Mean-centered 465nm/560nm and 405nm fluorescence.
     2. Predicted vs actual 465nm/560nm values.
     3. dFF values from fit_linear()
@@ -188,13 +180,9 @@ def fp_traces_panel(
         )
         ax[0].legend(loc="upper right", fontsize="small")
         ax[0].set_ylabel("Y-mean(Y)", size=20)
-        ax[0].set_title(
-            f"mean-centered {yiso[0:5]} (purple) & {yvar} (green) values", size=28
-        )
+        ax[0].set_title(f"mean-centered {yiso[0:5]} (purple) & {yvar} (green) values", size=28)
         # plot-1 405nm and 465nm raw values
-        ax[1].plot(
-            df_plot["time"], df_plot[yvar + "_pred"], color="red", label="predicted"
-        )
+        ax[1].plot(df_plot["time"], df_plot[yvar + "_pred"], color="red", label="predicted")
         ax[1].plot(df_plot["time"], df_plot[yvar], color="black", label="actual")
         ax[1].legend(loc="upper right", fontsize="small")
         ax[1].set_ylabel("Fluorescence (a.u.)", size=20)
@@ -270,11 +258,7 @@ def plot_trial_avg(
             hue_stds = df.groupby([xvar, hue]).sem().reset_index()
         else:
             hue_stds = (
-                df.groupby([xvar, hue, "Animal"])
-                .mean()
-                .groupby([xvar, hue])
-                .sem()
-                .reset_index()
+                df.groupby([xvar, hue, "Animal"]).mean().groupby([xvar, hue]).sem().reset_index()
             )
         # plot the data for each hue level
         for hue_level in hue_means[hue].unique():
@@ -282,24 +266,18 @@ def plot_trial_avg(
             y = hue_means.loc[hue_means[hue] == hue_level, yvar]
             yerr = hue_stds.loc[hue_stds[hue] == hue_level, yvar]
             line = ax.plot(x, y, label=f"{hue}: {hue_level}", **kwargs)
-            ax.fill_between(
-                x, y - yerr, y + yerr, facecolor=line[0].get_color(), alpha=0.15
-            )
+            ax.fill_between(x, y - yerr, y + yerr, facecolor=line[0].get_color(), alpha=0.15)
             ax.legend(fontsize=12)
     else:
         animal_means = df.groupby([xvar]).mean().reset_index()
-        animal_stds = (
-            df.groupby([xvar, "Animal"]).mean().groupby(xvar).sem().reset_index()
-        )
+        animal_stds = df.groupby([xvar, "Animal"]).mean().groupby(xvar).sem().reset_index()
         # grab variables for plotting
         x = animal_means.loc[:, xvar]
         y = animal_means.loc[:, yvar]
         yerror = animal_stds.loc[:, yvar]
         # plot the data
         line = ax.plot(x, y, **kwargs)
-        ax.fill_between(
-            x, y - yerror, y + yerror, facecolor=line[0].get_color(), alpha=0.15
-        )
+        ax.fill_between(x, y - yerror, y + yerror, facecolor=line[0].get_color(), alpha=0.15)
 
 
 @savefig
@@ -308,34 +286,30 @@ def plot_trial_subplot(
     df,
     yvar="dFF_znorm",
     xvar="time_trial",
-    subplot_params=(3, 4),
+    subplot_dims=(3, 4),
     fig_size=(32, 24),
     suptitle=None,
     **kwargs,
 ):
     """
     Generate trial-by-trial plot averaged across subjects.
-    Users can control the shape of the suplots by passing a tuple into subplot_params.
+    Users can control the shape of the suplots by passing a tuple into subplot_dims.
 
     Args:
         df (DataFrame): Trial-level data to plot.
         yvar (str): Dependent variable to plot. Defaults to "dFF_znorm".
         xvar (str): Name of variable with trial time bins. Defaults to "time_trial".
-        subplot_params (tuple, optional): Dimensions of suplot panels specified row x col. Defaults to (3, 4).
+        subplot_dims (tuple, optional): specified row x col. Defaults to (3, 4).
         fig_size (tuple, optional): Figure size. Defaults to (32, 24).
         suptitle (str, optional): Figure title. Defaults to None.
     """
-    fig, axs = plt.subplots(
-        subplot_params[0], subplot_params[1], figsize=fig_size, sharey=False
-    )
+    fig, axs = plt.subplots(subplot_dims[0], subplot_dims[1], figsize=fig_size, sharey=False)
     xticks = np.arange(int(min(df["time_trial"])), int(max(df["time_trial"])), step=20)
     plt.setp(axs, xticks=xticks, xticklabels=xticks)
     for i, ax in enumerate(axs.reshape(-1)):
         if i + 1 <= df["Trial"].max():
             single_trial = df.loc[df["Trial"] == i + 1, :]
-            plot_trial_avg(
-                single_trial, yvar, xvar, ax=ax, title=f"Trial {i+1}", **kwargs
-            )
+            plot_trial_avg(single_trial, yvar, xvar, ax=ax, title=f"Trial {i+1}", **kwargs)
         else:
             fig.delaxes(ax)
     if suptitle:
@@ -347,13 +321,9 @@ def plot_trial_subplot(
 @savefig
 @style_plot
 def plot_trial_heatmap(df, yvar="dFF_znorm", fig_size=(32, 6), label_size=16, **kwargs):
-    """
-    Plot heatmap of dFF across trials.
-    """
+    """Plot heatmap of dFF across trials."""
     # pivot df for heatmap format
-    df_group_agg = df.pivot_table(
-        index="Trial", columns="time_trial", values=yvar, aggfunc="mean"
-    )
+    df_group_agg = df.pivot_table(index="Trial", columns="time_trial", values=yvar, aggfunc="mean")
     plt.figure(1, figsize=fig_size)
     ax = sns.heatmap(
         df_group_agg,
@@ -390,7 +360,18 @@ def plot_single_trial(
     us_del=40,
     us_dur=2,
 ):
+    """
+    Visualize a single trial.
 
+    Args:
+        trials_df (DataFrame): Trial data to plot.
+        subject (str): Subject id
+        trial (int): Trial to plot
+        signals (list): List of signals to plot (overlap on same plot).
+        cs_dur (int, optional): CS duration. Defaults to 20.
+        us_del (int, optional): Time of US delivery. Defaults to 40.
+        us_dur (int, optional): US duration. Defaults to 2.
+    """
     trial_data = trials_df.query("Animal == @subject and Trial == @trial")
 
     fig, ax = plt.subplots(1, 1, figsize=(12, 10))
@@ -403,4 +384,4 @@ def plot_single_trial(
     ax.set_title(f"Subject: {subject} Trial: {trial}", pad=20)
     ax.set_ylabel("Fluorescence (au)")
     ax.legend(fontsize=24)
-    plt.tight_layout()
+    fig.tight_layout()
