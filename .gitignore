@@ -14,7 +14,7 @@ build
 *.whl
 *.pytest_cache
 __pycache__
-
+.venv
 
 # OS generated files #
 ######################
