@@ -186,7 +186,8 @@ def get_tfc_trial_data(
     last_trial = df.query("Trial == Trial.unique()[-1]")
     extra_row_cnt = last_trial.shape[0] - first_trial.shape[0]
     df = df[:-extra_row_cnt] if extra_row_cnt > 0 else df
-    df.loc[:, "Trial"] = df.loc[:, "Trial"].astype(int)
+    # df.loc[:, "Trial"] = df.loc[:, "Trial"].astype(int)
+    df.loc[:, "Trial"].astype(int)
     # create common time_trial
     n_trial_pts = len(df.query("Animal == Animal[0] and Trial == Trial[0]"))
     time_trial = np.linspace(
@@ -243,9 +244,9 @@ def tfc_trials_df(
     )
 
     df_list = []
-    for animal in df["Animal"].unique():
+    for _animal in df["Animal"].unique():
         if trial_dff:
-            df_animal = df.query("Animal == @animal").copy()
+            df_animal = df.query("Animal == @_animal").copy()
             debleach_bool = False
             _Y_ref = "405nm"
             _Y_sig = "465nm"

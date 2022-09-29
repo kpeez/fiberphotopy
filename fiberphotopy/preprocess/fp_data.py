@@ -88,7 +88,8 @@ def load_doric_data(
     # clean up TTL cols
     ttl_cols = df.columns.str.contains("ttl")
     df.loc[:, ttl_cols] = np.round(df.loc[:, ttl_cols])
-    df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
+    # df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
+    df.loc[:, ttl_cols].astype(int)
     # drop any TTL channels with all 1s or 0s
     for col in df.loc[:, ttl_cols].columns:
         if len(pd.unique(df.loc[:, col])) == 1:
@@ -144,7 +145,7 @@ def resample_data(df, freq):
     df.index = df["time"]
     df.index = pd.to_timedelta(df.index, unit="s")
     # TODO: check behavior of resample and set numeric_only explicitly.
-    df = df.resample(f"{period}S").mean()
+    df = df.resample(f"{period}S").mean(numeric_only=True)
     df["time"] = df.index.total_seconds()
     df = df.reset_index(drop=True)
     # resample also moves 'Animal' to end of DataFrame, put it back at front
@@ -154,7 +155,8 @@ def resample_data(df, freq):
     df["Animal"] = subject_id
     # for some reason this function converts TTL cols to float64
     ttl_cols = df.columns.str.contains("ttl")
-    df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
+    # df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
+    df.loc[:, ttl_cols].astype(int)
 
     return df
 
