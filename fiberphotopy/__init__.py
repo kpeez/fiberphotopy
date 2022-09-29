@@ -3,7 +3,6 @@
 
 __version__ = "0.2.2"
 
-
 from .plotting.fp_viz import (
     fp_traces_panel,
     plot_dff_data,

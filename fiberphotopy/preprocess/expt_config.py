@@ -24,8 +24,8 @@ def create_expt_config(expt_name=None, config_name=None, project_path=None):
     config_file = config_filename + ".yml"
     project_path = project_path if project_path else Path.cwd()
     # test project_path type
-    assert isinstance(project_path, pathlib.PurePath) or isinstance(
-        project_path, str
+    assert isinstance(
+        project_path, (pathlib.PurePath, str)
     ), "project path must be a str or Path object"
     # test config_filename exists
     for f in list(project_path.glob("*.y*ml")):
@@ -43,7 +43,7 @@ def create_expt_config(expt_name=None, config_name=None, project_path=None):
             "data": str(project_path) + "/data",
         },
         "sessions": {},
-        "group_ids": {"group1": list(), "group2": list()},
+        "group_ids": {"group1": [], "group2": []},
         "sex_ids": None,
     }
     # lazy convert dict with ruamel
@@ -95,10 +95,10 @@ def update_expt_config(expt_config, config_filename, update_dict):
         update_dict (dict): dict of keys in expt_config to update.
     """
 
-    if "dirs" in update_dict.keys():
+    if "dirs" in update_dict:
         dir_dict = update_dict.pop("dirs")
         # update params contianing project_path
-        if "project" in dir_dict.keys():
+        if "project" in dir_dict:
             dir_dict["figures"] = dir_dict["project"] + "/figures/"
             dir_dict["data"] = dir_dict["project"] + "/data/"
             dir_dict["fp_data"] = dir_dict["project"] + "/raw/photometry/"

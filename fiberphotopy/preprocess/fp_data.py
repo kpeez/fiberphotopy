@@ -143,6 +143,7 @@ def resample_data(df, freq):
     # convert index to timedelta and resample
     df.index = df["time"]
     df.index = pd.to_timedelta(df.index, unit="s")
+    # TODO: check behavior of resample and set numeric_only explicitly.
     df = df.resample(f"{period}S").mean()
     df["time"] = df.index.total_seconds()
     df = df.reset_index(drop=True)
@@ -212,6 +213,7 @@ def load_session_data(
             for key in subject_dict:
                 subj_rows = df["Animal"].str.contains(key)
                 df.loc[subj_rows, "Animal"] = subject_dict[key]
+
     return df
 
 
@@ -228,8 +230,8 @@ def smooth_trial_data(df, yvar, smooth_factor=0.025):
     def _smooth_subject_trials(df, yvar="dFF_baseline_norm", _smooth_factor=0.025):
         lowess = sm.nonparametric.lowess
         dff_smooth = []
-        for trial in df["Trial"].unique():
-            df_trial = df.query("Trial == @trial")
+        for _trial in df["Trial"].unique():
+            df_trial = df.query("Trial == @_trial")
             x = df_trial["time_trial"].values
             y = df_trial[yvar].values
             mod_smooth = lowess(y, x, frac=_smooth_factor, return_sorted=False)
@@ -238,8 +240,8 @@ def smooth_trial_data(df, yvar, smooth_factor=0.025):
         return df.assign(dFF_smooth=dff_smooth)
 
     smooth_data_list = []
-    for subject in df["Animal"].unique():
-        df_subj = df.query("Animal == @subject ")
+    for _subject in df["Animal"].unique():
+        df_subj = df.query("Animal == @_subject")
         smooth_data_list.append(
             _smooth_subject_trials(df_subj, yvar=yvar, _smooth_factor=smooth_factor)
         )
@@ -267,8 +269,8 @@ def trial_normalize(df, yvar):
 
     znorm_vals = []
     bnorm_vals = []
-    for trial in df["Trial"].unique():
-        df_trial = df.query("Trial == @trial")
+    for _trial in df["Trial"].unique():
+        df_trial = df.query("Trial == @_trial")
         trial_vals = df_trial[yvar].values
         znorm_vals.append(stats.zscore(trial_vals, ddof=1))
         # trial baseline normalization
@@ -370,8 +372,8 @@ def debleach_signals(df, Y_ref="405nm", Y_sig="465nm", by_trial=False):
         assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
         ref_biexp = []
         sig_biexp = []
-        for trial in df["Trial"].unique():
-            df_trial = df.query("Trial == @trial")
+        for _trial in df["Trial"].unique():
+            df_trial = df.query("Trial == @_trial")
             ref_biexp.extend(fit_biexponential(df_trial, t="time_trial", y=Y_ref))
             sig_biexp.extend(fit_biexponential(df_trial, t="time_trial", y=Y_sig))
 
