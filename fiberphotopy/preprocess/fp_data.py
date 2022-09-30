@@ -88,8 +88,7 @@ def load_doric_data(
     # clean up TTL cols
     ttl_cols = df.columns.str.contains("ttl")
     df.loc[:, ttl_cols] = np.round(df.loc[:, ttl_cols])
-    # df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
-    df.loc[:, ttl_cols].astype(int)
+    df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
     # drop any TTL channels with all 1s or 0s
     for col in df.loc[:, ttl_cols].columns:
         if len(pd.unique(df.loc[:, col])) == 1:
@@ -155,8 +154,7 @@ def resample_data(df, freq):
     df["Animal"] = subject_id
     # for some reason this function converts TTL cols to float64
     ttl_cols = df.columns.str.contains("ttl")
-    # df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
-    df.loc[:, ttl_cols].astype(int)
+    df[df.columns[ttl_cols]] = df[df.columns[ttl_cols]].astype(int)
 
     return df
 
