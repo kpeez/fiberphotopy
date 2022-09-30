@@ -54,9 +54,7 @@ def plot_raw_data(
     yvar="465nm",
     yiso="405nm",
     xvar="time",
-    session="Training",
     ax=None,
-    **kwargs,
 ):
     """Plot raw data (`yvar` and `yiso`) over time interval specified in `xvar`."""
     ax = _make_ax(ax)
@@ -75,9 +73,7 @@ def plot_dff_data(
     xvar="time",
     yvar="465nm",
     dffvar="dFF",
-    session="Training",
     ax=None,
-    **kwargs,
 ):
     """Plot dFF data over time interval specified in `xvar`."""
     ax = _make_ax(ax)
@@ -122,7 +118,7 @@ def plot_fp_session(
         **kwargs,
     ):
 
-        fig, axs = plt.subplots(2, 1, figsize=fig_size)  # , sharex=True)
+        fig, axs = plt.subplots(2, 1, figsize=fig_size)
         fig.suptitle(f"{session}: {df_plot['Animal'].unique()[0]}", size=28)
         plot_raw_data(df_plot, ax=axs[0], **kwargs)
         axs[0].legend(fontsize=16, loc="upper right", bbox_to_anchor=(1, 1.1))
@@ -253,12 +249,16 @@ def plot_trial_avg(
         yvar = "dFF_smooth"
 
     if hue:
-        hue_means = df.groupby([xvar, hue]).mean().reset_index()
+        hue_means = df.groupby([xvar, hue]).mean(numeric_only=True).reset_index()
         if hue in ["Animal", "Trial"]:
             hue_stds = df.groupby([xvar, hue]).sem().reset_index()
         else:
             hue_stds = (
-                df.groupby([xvar, hue, "Animal"]).mean().groupby([xvar, hue]).sem().reset_index()
+                df.groupby([xvar, hue, "Animal"])
+                .mean(numeric_only=True)
+                .groupby([xvar, hue])
+                .sem()
+                .reset_index()
             )
         # plot the data for each hue level
         for hue_level in hue_means[hue].unique():
@@ -269,8 +269,10 @@ def plot_trial_avg(
             ax.fill_between(x, y - yerr, y + yerr, facecolor=line[0].get_color(), alpha=0.15)
             ax.legend(fontsize=12)
     else:
-        animal_means = df.groupby([xvar]).mean().reset_index()
-        animal_stds = df.groupby([xvar, "Animal"]).mean().groupby(xvar).sem().reset_index()
+        animal_means = df.groupby([xvar]).mean(numeric_only=True).reset_index()
+        animal_stds = (
+            df.groupby([xvar, "Animal"]).mean(numeric_only=True).groupby(xvar).sem().reset_index()
+        )
         # grab variables for plotting
         x = animal_means.loc[:, xvar]
         y = animal_means.loc[:, yvar]

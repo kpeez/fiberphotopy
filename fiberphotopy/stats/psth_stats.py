@@ -33,9 +33,13 @@ def calc_pre_post(df, event, t_pre, t_post, measure="mean"):
     df_prepost = pd.concat([df_pre, df_post])
 
     if measure == "mean":
-        return df_prepost.groupby(["Animal", "epoch"]).mean().reset_index()
+        return df_prepost.groupby(["Animal", "epoch"]).mean(numeric_only=True).reset_index()
     elif measure == "max":
-        df_prepost = df_prepost.groupby(["Animal", "time_trial", "epoch"]).mean().reset_index()
+        df_prepost = (
+            df_prepost.groupby(["Animal", "time_trial", "epoch"])
+            .mean(numeric_only=True)
+            .reset_index()
+        )
         return df_prepost.groupby(["Animal", "epoch"]).max().reset_index()
 
 
