@@ -268,7 +268,7 @@ def tfc_trials_df(
             )
 
         else:
-            df_animal = df.query("Animal == @animal").copy()
+            df_animal = df.query("Animal == @_animal").copy()
 
         df_list.append(trial_normalize(df_animal, yvar))
 

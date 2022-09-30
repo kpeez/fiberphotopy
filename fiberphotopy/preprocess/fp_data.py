@@ -287,7 +287,7 @@ def trial_normalize(df, yvar):
 
 
 def get_ols_preds(Y, X):
-    """Get simple linear regression predictions."""
+    """Get simple linear reression predictions."""
     mod = sm.OLS(Y, X).fit()
     return mod.predict(X)
 
