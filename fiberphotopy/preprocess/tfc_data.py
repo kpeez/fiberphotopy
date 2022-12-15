@@ -7,7 +7,9 @@ import pandas as pd
 from .fp_data import debleach_signals, fit_linear, save_data, trial_normalize
 
 
-def make_tfc_comp_times(n_trials, baseline, cs_dur, trace_dur, us_dur, iti_dur):
+def make_tfc_comp_times(
+    n_trials: int, baseline: int, cs_dur: int, trace_dur: int, us_dur: int, iti_dur: int
+) -> pd.DataFrame:
     """
     Create component times instead of loading from file.
 
@@ -53,7 +55,7 @@ def make_tfc_comp_times(n_trials, baseline, cs_dur, trace_dur, us_dur, iti_dur):
     return comp_times_df
 
 
-def load_tfc_comp_times(session="train"):
+def load_tfc_comp_times(session: str = "train") -> pd.DataFrame:
     """
     Load TFC phase components.xlsx from /docs.
 
@@ -69,8 +71,7 @@ def load_tfc_comp_times(session="train"):
     return pd.read_excel(doc_dir / component_label_file, sheet_name=session)
 
 
-def find_tfc_components(df, session="train"):
-    # TODO: Test function
+def find_tfc_components(df: pd.DataFrame, session: str = "train") -> pd.DataFrame:
     """
     Find TFC components from TFC phase components.xlsx file.
 
@@ -95,8 +96,7 @@ def find_tfc_components(df, session="train"):
     return df_new
 
 
-def label_tfc_phases(df, session="train"):
-    # TODO: Test function
+def label_tfc_phases(df: pd.DataFrame, session: str = "train") -> pd.DataFrame:
     """
     Label TFC phases using TFC components. "Phases" are simply aggregated components of same type.
 
@@ -128,15 +128,16 @@ def label_tfc_phases(df, session="train"):
     return df
 
 
+@save_data
 def get_tfc_trial_data(
-    df,
-    session,
-    trial_start,
-    cs_dur,
-    trace_dur,
-    us_dur,
-    iti_dur,
-):
+    df: pd.DataFrame,
+    session: str,
+    trial_start: int,
+    cs_dur: int,
+    trace_dur: int,
+    us_dur: int,
+    iti_dur: int,
+) -> pd.DataFrame:
     """
     1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each CS onset.
     2. Normalizes dFF for each trial to the avg dFF of each trial's pre-CS period.
@@ -172,13 +173,11 @@ def get_tfc_trial_data(
     # determine number of tone trials from label
     n_trials = len(tone_idx)
     n_subjects = df.Animal.nunique()
-    trial_num = int(1)
     # subset trial data (-20 prior to CS --> 100s after trace/shock)
-    for tone, iti in zip(tone_idx, iti_idx):
+    for trial_num, (tone, iti) in enumerate(zip(tone_idx, iti_idx), 1):
         start = comp_labs.loc[tone, "start"] + trial_start
         end = comp_labs.loc[iti, "start"] + iti_dur + trial_start
-        df.loc[(start <= df.time) & (df.time < end), "Trial"] = int(trial_num)
-        trial_num += 1
+        df.loc[(start <= df.time) & (df.time < end), "Trial"] = trial_num
     # remove extra time points
     df = df.dropna().reset_index(drop=True)
     # check if last_trial contains extra rows and if so, drop them
@@ -197,19 +196,18 @@ def get_tfc_trial_data(
     return df
 
 
-@save_data
 def tfc_trials_df(
-    session_df,
-    session="train",
-    yvar="465nm_dFF",
-    trial_dff=False,
-    trial_debleach=False,
-    trial_start=-20,
-    cs_dur=20,
-    trace_dur=20,
-    us_dur=2,
-    iti_dur=120,
-):
+    session_df: pd.DataFrame,
+    session: str = "train",
+    yvar: str = "465nm_dFF",
+    trial_dff: bool = False,
+    trial_debleach: bool = False,
+    trial_start: int = -20,
+    cs_dur: int = 20,
+    trace_dur: int = 20,
+    us_dur: int = 2,
+    iti_dur: int = 120,
+) -> pd.DataFrame:
     """
     1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each cue onset.
     2. Normalizes dFF for each trial to the avg dFF of each trial's baseline period (pre-cue).
@@ -220,7 +218,7 @@ def tfc_trials_df(
         yvar (str): Name of dependent variable to trial-normalize. Defaults to "465nm_dFF".
         trial_dff (bool, optional): Fit trial_dFF on each trial. Defaults to False.
         trial_debleach (bool, optional): Fit biexponential on each trial. Defaults to False.
-        trial_start (int): _description_. Defaults to -20.
+        trial_start (int): Trail start time. Defaults to -20.
         cs_dur (int): CS duration used to calculate trial time. Defaults to 20.
         trace_dur (int): Duration of trace interval. Defaults to 20. Set to 0 for delay FC.
         us_dur (int): Duration of unconditional stimulus. Defaults to 2.

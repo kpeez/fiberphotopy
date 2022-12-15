@@ -7,7 +7,7 @@ from ..preprocess.fp_data import smooth_trial_data
 from .fp_viz_utils import _make_ax, savefig, set_trialavg_aes, style_plot
 
 # define color palette:
-kp_pal = [
+kp_pal: list[str] = [
     "#2b88f0",  # blue
     "#EF862E",  # orange
     "#00B9B9",  # cyan
@@ -19,7 +19,7 @@ kp_pal = [
 ]
 
 
-def plot_style(figure_size=None):
+def plot_style(figure_size: tuple[int, int] = None):
     """Set default plot style."""
     figure_size = figure_size if figure_size else [30, 20]
     size_scalar = (sum(figure_size) / 2) / 25
@@ -251,7 +251,7 @@ def plot_trial_avg(
     if hue:
         hue_means = df.groupby([xvar, hue]).mean(numeric_only=True).reset_index()
         if hue in ["Animal", "Trial"]:
-            hue_stds = df.groupby([xvar, hue]).sem().reset_index()
+            hue_stds = df.groupby([xvar, hue]).sem(numeric_only=True).reset_index()
         else:
             hue_stds = (
                 df.groupby([xvar, hue, "Animal"])
@@ -361,7 +361,7 @@ def plot_single_trial(
     cs_dur=20,
     us_del=40,
     us_dur=2,
-):
+) -> None:
     """
     Visualize a single trial.
 
