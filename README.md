@@ -18,6 +18,13 @@ The easiest way to install fiberphotopy is with `pip`.
 pip install fiberphotopy
 ```
 
+If you are using `poetry`, you can use the most up-to-date version by cloning the repo
+and running
+
+```bash
+make install
+```
+
 ## Features
 
 ### Loading data
