@@ -2,15 +2,17 @@
 import datetime
 from functools import wraps
 from pathlib import Path
+from typing import Callable
 
 import numpy as np
+from numpy.typing import ArrayLike
 import pandas as pd
 import scipy.stats as stats
 import statsmodels.api as sm
 from scipy.optimize import curve_fit
 
 
-def save_data(func):
+def save_data(func: Callable) -> None:
     """
     Save data decorator function.
 
@@ -22,7 +24,7 @@ def save_data(func):
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: str, **kwargs: str) -> Callable:
         # add save_path and filename kwargs
         save = kwargs.pop("save", False)
         data_path = kwargs.pop("data_path", None)
@@ -85,8 +87,8 @@ def load_doric_data(
     df.columns = [col.replace(" ", "") for col in df.columns]
     new_col_names = {
         "Time(s)": "time",
-        f"AIn-{input_ch}-Dem(AOut-{ref_led})": ref_name if ref_name else "reference",
-        f"AIn-{input_ch}-Dem(AOut-{sig_led})": sig_name if sig_name else "signal",
+        f"AIn-{input_ch}-Dem(AOut-{ref_led})": ref_name if ref_name else "Y_ref",
+        f"AIn-{input_ch}-Dem(AOut-{sig_led})": sig_name if sig_name else "Y_sig",
     }
     for col in df.columns.to_list():
         if "DI/O" in col:
@@ -107,7 +109,7 @@ def load_doric_data(
     return df
 
 
-def trim_ttl_data(df: pd.DataFrame, TTL_session_ch: int = 1, TTL_on: int = 0):
+def trim_ttl_data(df: pd.DataFrame, TTL_session_ch: int = 1, TTL_on: int = 0) -> pd.DataFrame:
     """
     Find first and last TTL input (to indicate start and end of behavioral session).
     - In the Doric recording TTL value is 1.
@@ -183,19 +185,19 @@ def resample_data(df: pd.DataFrame, freq: int) -> pd.DataFrame:
 
 @save_data
 def load_session_data(
-    filedir,
-    sig_name="465nm",
-    ref_name="405nm",
-    input_ch=1,
-    ref_led=1,
-    sig_led=2,
-    subject_dict=None,
-    TTL_trim=True,
-    TTL_session_ch=1,
-    TTL_on=0,
-    downsample=True,
-    freq=10,
-):
+    filedir: str | Path,
+    sig_name: str = "465nm",
+    ref_name: str = "405nm",
+    input_ch: int = 1,
+    ref_led: int = 1,
+    sig_led: int = 2,
+    subject_dict: dict[str, str] = None,
+    TTL_trim: bool = True,
+    TTL_session_ch: int = 1,
+    TTL_on: int = 0,
+    downsample: bool = True,
+    freq: int = 10,
+) -> pd.DataFrame:
     """
     1. Load photometry session data from a directory.
     2. (optional) Trim data to session with TTL pulse.
@@ -209,6 +211,7 @@ def load_session_data(
         input_ch (int): Analong input ch on Doric system. Defaults to 1.
         ref_led (int): Analog output ch for reference channel. Defaults to 1.
         sig_led (int): Analog output ch for signal channel. Defaults to 2.
+        subject_dict (dict[str, str]): Dict mapping filename to subject names. Defaults to None.
         TTL_trim (bool, optional): align session data with TTL pulse. Defaults to True.
         TTL_session_ch (int, optional): TTL input channel for session start and end. Defaults to 1.
         TTL_on (int, optional): Value of TTL pulse when ON. Defaults to 0.
@@ -219,7 +222,7 @@ def load_session_data(
         DataFrame: Combined data for every file in the input directory.
     """
     data_file_list = [str(data_file) for data_file in list(Path(filedir).glob("*.csv"))]
-    df_list = []
+    df_list: list[pd.DataFrame] = []
     for data_file in data_file_list:
         df_temp = load_doric_data(data_file, sig_name, ref_name, input_ch, sig_led, ref_led)
         if TTL_trim:
@@ -239,9 +242,9 @@ def load_session_data(
     return df
 
 
-def smooth_trial_data(df, yvar, smooth_factor=0.025):
+def smooth_trial_data(df: pd.DataFrame, yvar: str, smooth_factor: float = 0.025) -> pd.DataFrame:
     """
-    Apply LOESS filter to smooth data.
+    Apply LOESS filter to smooth data (for visualization only).
 
     Args:
         df (DataFrame): Trial-level data
@@ -249,7 +252,9 @@ def smooth_trial_data(df, yvar, smooth_factor=0.025):
         smooth_factor (float, optional): Amount of smoothing to apply. Defaults to 0.025.
     """
 
-    def _smooth_subject_trials(df, yvar="dFF_baseline_norm", _smooth_factor=0.025):
+    def _smooth_subject_trials(
+        df: pd.DataFrame, yvar: str = "dFF_baseline_norm", _smooth_factor: float = 0.025
+    ) -> pd.DataFrame:
         lowess = sm.nonparametric.lowess
         dff_smooth = []
         for _trial in df["Trial"].unique():
@@ -271,7 +276,7 @@ def smooth_trial_data(df, yvar, smooth_factor=0.025):
     return pd.concat(smooth_data_list)
 
 
-def trial_normalize(df, yvar):
+def trial_normalize(df: pd.DataFrame, yvar: str) -> pd.DataFrame:
     """
     Compute a normalized yvar from trial-level data.
     Calculated in two different ways:
@@ -287,7 +292,6 @@ def trial_normalize(df, yvar):
     """
 
     assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
-    # df = df.copy()
 
     znorm_vals = []
     bnorm_vals = []
@@ -306,13 +310,15 @@ def trial_normalize(df, yvar):
     )
 
 
-def get_ols_preds(Y, X):
+def get_ols_preds(Y: ArrayLike, X: ArrayLike) -> ArrayLike:
     """Get simple linear reression predictions."""
     mod = sm.OLS(Y, X).fit()
     return mod.predict(X)
 
 
-def fit_linear(df, Y_sig="465nm", Y_ref="405nm", by_trial=False, debleached=False):
+def fit_linear(
+    df: pd.DataFrame, Y_sig: str, Y_ref: str, by_trial: bool = False, debleached: bool = False
+) -> pd.DataFrame:
     """
     Apply linear regression to model fluorescence data.
 
@@ -324,7 +330,7 @@ def fit_linear(df, Y_sig="465nm", Y_ref="405nm", by_trial=False, debleached=Fals
         debleached (bool, optional): Apply debleaching prior to linear fit. Defaults to False.
 
     Returns:
-        _type_: _description_
+        pd.DataFrame: Output DataFrame with new column "dFF" or "dFF_debleached".
     """
 
     df = df.copy()
@@ -355,7 +361,7 @@ def fit_linear(df, Y_sig="465nm", Y_ref="405nm", by_trial=False, debleached=Fals
     )
 
 
-def fit_biexponential(df, t, y):
+def fit_biexponential(df: pd.DataFrame, t: str, y: str) -> ArrayLike:
     """
     Fit biexponential model.
 
@@ -363,9 +369,12 @@ def fit_biexponential(df, t, y):
         df (DataFrame): Data to model.
         t (str): Name of time variable.
         y (str): Name of signal to fit.
+
+    Returns:
+        ArrayLike: Biexponential model predictions.
     """
 
-    def _biexponential(x, a, b, c, d):
+    def _biexponential(x: ArrayLike, a: float, b: float, c: float, d: float) -> ArrayLike:
         return a * np.exp(b * x) + c * np.exp(d * x)
 
     popt, *_ = curve_fit(_biexponential, df[t], df[y], p0=(0.5, 0, 0.5, 0), maxfev=10000)
@@ -374,7 +383,9 @@ def fit_biexponential(df, t, y):
     return biexp
 
 
-def debleach_signals(df, Y_ref="405nm", Y_sig="465nm", by_trial=False) -> pd.DataFrame:
+def debleach_signals(
+    df: pd.DataFrame, Y_ref: str = "405nm", Y_sig: str = "465nm", by_trial: bool = False
+) -> pd.DataFrame:
     """
     Debleach photodecay using biexponential model.
 
@@ -392,8 +403,8 @@ def debleach_signals(df, Y_ref="405nm", Y_sig="465nm", by_trial=False) -> pd.Dat
 
     if by_trial:
         assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
-        ref_biexp = []
-        sig_biexp = []
+        ref_biexp: list[pd.DataFrame] = []
+        sig_biexp: list[pd.DataFrame] = []
         for _trial in df["Trial"].unique():
             df_trial = df.query("Trial == @_trial")
             ref_biexp.extend(fit_biexponential(df_trial, t="time_trial", y=Y_ref))
