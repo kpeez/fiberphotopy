@@ -47,28 +47,37 @@ def save_data(func):
 
 @save_data
 def load_doric_data(
-    filename,
-    sig_name=None,
-    ref_name=None,
-    input_ch=1,
-    sig_led=2,
-    ref_led=1,
-    animal_id=None,
-):
+    filename: str,
+    sig_name: str = None,
+    ref_name: str = None,
+    input_ch: int = 1,
+    sig_led: int = 2,
+    ref_led: int = 1,
+    animal_id: str = None,
+) -> pd.DataFrame:
     """
     Load photometry data from Doric Neuroscience Studio.
 
-    Args:
-        filename (str): input file
-        sig_name (str, optional): Signal channel name. Defaults to None.
-        ref_name (str, optional): Reference channel name. Defaults to None.
-        input_ch (int, optional): Data input channel on acquisiton system. Defaults to 1.
-        sig_led (int, optional): LED channel for signal channel. Defaults to 2.
-        ref_led (int, optional): LED channel for reference channel. Defaults to 1.
-        animal_id (str, optional): Animal id for recording. Defaults to None.
+    Parameters
+    ----------
+    filename : str
+        input filename
+    sig_name : str, optional
+        Signal channel name, by default None
+    ref_name : str, optional
+        Reference channel name, by default None
+    input_ch : int, optional
+        Analog input channel on acquisiton system, by default 1
+    sig_led : int, optional
+        LED channel for signal channel, by default 2
+    ref_led : int, optional
+        LED channel for reference channel, by default 1
+    animal_id : str, optional
+        Animal, by default None
 
-    Returns:
-        DataFrame: initial clean data
+    Returns
+    -------
+    pd.DataFrame
     """
     df_raw = pd.read_csv(f"{filename}")
     df = df_raw.copy()
@@ -88,7 +97,8 @@ def load_doric_data(
     # clean up TTL cols
     ttl_cols = df.columns.str.contains("ttl")
     df.loc[:, ttl_cols] = np.round(df.loc[:, ttl_cols])
-    df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
+    # df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
+    df[df.columns[ttl_cols]] = df[df.columns[ttl_cols]].astype(int)
     # drop any TTL channels with all 1s or 0s
     for col in df.loc[:, ttl_cols].columns:
         if len(pd.unique(df.loc[:, col])) == 1:
@@ -97,19 +107,25 @@ def load_doric_data(
     return df
 
 
-def trim_ttl_data(df, TTL_session_ch=1, TTL_on=0):
+def trim_ttl_data(df: pd.DataFrame, TTL_session_ch: int = 1, TTL_on: int = 0):
     """
     Find first and last TTL input (to indicate start and end of behavioral session).
     - In the Doric recording TTL value is 1.
     - When Med-Assocaites SG-231 is ON, TTL value set to 0
 
-    Args:
-        df (DataFrame): Data containing TTL pulses for session start/stop.
-        TTL_session_ch (int): IO channel containing session start/stop TTL pulses. Defaults to 1.
-        TTL_on (int): Value whne TTL pulse is ON. Defaults to 0.
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data containing TTL pulses for session start/stop.
+    TTL_session_ch : int
+        IO channel containing session start/stop TTL pulses, by default 1.
+    TTL_on : int
+        Value whne TTL pulse is ON, by default 0
 
-    Returns:
-        DataFrame: DataFrame trimmed to session start/stop.
+    Returns
+    -------
+        out: pd.DataFrame
+            Trimmed DataFrame.
     """
     df = df.copy()
     ttl_ch = "ttl_" + str(TTL_session_ch)
@@ -125,16 +141,22 @@ def trim_ttl_data(df, TTL_session_ch=1, TTL_on=0):
     return df
 
 
-def resample_data(df, freq):
+def resample_data(df: pd.DataFrame, freq: int) -> pd.DataFrame:
     """
-    Resample DataFrame to the provided frequency.
+        Resample DataFrame to the provided frequency.
 
-    Args:
-        df (DataFrame): DataFrame to resample
-        freq (int): New frequency of DataFrame
 
-    Returns:
-        DataFrame: Resampled DataFrame
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data to resample.
+    freq : int
+        Resampling frequency.
+
+    Returns
+    -------
+    pd.DataFrame
+        Resampled data.
     """
     period = 1 / freq
 
@@ -352,7 +374,7 @@ def fit_biexponential(df, t, y):
     return biexp
 
 
-def debleach_signals(df, Y_ref="405nm", Y_sig="465nm", by_trial=False):
+def debleach_signals(df, Y_ref="405nm", Y_sig="465nm", by_trial=False) -> pd.DataFrame:
     """
     Debleach photodecay using biexponential model.
 
