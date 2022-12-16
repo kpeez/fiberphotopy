@@ -32,7 +32,6 @@ flake8-annotations = "^2.9.1"
 flake8-docstrings = "^1.6.0"
 mypy = "^0.991"
 ipykernel = "^6.19.2"
-pandas-stubs = "^1.5.2.221213"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"
@@ -70,10 +69,11 @@ profile="black"
 [tool.mypy]
 files = ["fiberphotopy"]
 disallow_untyped_defs = "True"
-disallow_any_unimported = "True"
-no_implicit_optional = "False"
+no_implicit_optional = "True"
+ignore_missing_imports = "True"
 check_untyped_defs = "True"
 warn_return_any = "True"
+follow_imports = "skip"
 warn_unused_ignores = "True"
 show_error_codes = "True"
 exclude = [
