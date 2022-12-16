@@ -12,6 +12,7 @@ datasets
 dist
 build
 poetry.lock
+.mypy_cache
 *.whl
 *.pytest_cache
 __pycache__

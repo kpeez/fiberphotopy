@@ -1,3 +1,13 @@
 [flake8]
-max-line-length = 99
-ignore = D205, D202
+max-line-length = 100
+extend-ignore = 
+    # ignore ' : ' (used by black)
+    E203,
+    # __init__ doctstring
+    D107,
+    # missing type for self in method 
+    ANN101,
+    # missing type for cls in classmethod 
+    ANN002,
+    # missing type for **kwargs
+    ANN003 
