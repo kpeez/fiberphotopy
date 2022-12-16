@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fiberphotopy"
-version = "0.2.3"
+version = "0.2.31"
 description = "Package for loading and processing fiber photometry data"
 authors = ["kpuhger <krpuhger@gmail.com>"]
 license = "MIT"
