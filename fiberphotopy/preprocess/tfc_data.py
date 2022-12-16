@@ -88,10 +88,11 @@ def find_tfc_components(df: pd.DataFrame, session: str = "train") -> pd.DataFram
     # search for time in sec, index into comp_labels
     # for start and end times
     for i in range(len(comp_labs["component"])):
-        df_new.loc[
-            df_new["time"].between(comp_labs["start"][i], comp_labs["end"][i]),
-            "Component",
-        ] = comp_labs["component"][i]
+        start = float(comp_labs["start"][i])
+        stop = float(comp_labs["end"][i])
+        df_new.loc[df_new["time"].between(start, stop), "Component",] = comp_labs[
+            "component"
+        ][i]
 
     return df_new
 
@@ -139,6 +140,8 @@ def get_tfc_trial_data(
     iti_dur: int,
 ) -> pd.DataFrame:
     """
+    Get trial-level data from session-level data.
+
     1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each CS onset.
     2. Normalizes dFF for each trial to the avg dFF of each trial's pre-CS period.
 
@@ -209,6 +212,8 @@ def tfc_trials_df(
     iti_dur: int = 120,
 ) -> pd.DataFrame:
     """
+    Get TFC trial-level data from session-level data.
+
     1. Creates a dataframe of "Trial data", from (trial_start, trial_end) around each cue onset.
     2. Normalizes dFF for each trial to the avg dFF of each trial's baseline period (pre-cue).
 

@@ -1,11 +1,13 @@
 """
 Functions and utilities to apply aesthetic styling to plots.
+
 Modified from neuroDSP: https://github.com/neurodsp-tools/neurodsp/tree/master/neurodsp/plts
 """
 import datetime
 import inspect
 from functools import wraps
 from pathlib import Path
+from typing import Any, Callable
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -23,17 +25,17 @@ kp_pal = [
 ]  # gray
 
 
-def set_color_palette(color_pal=None, show=False):
+def set_color_palette(color_pal: list[str] | None = None, show: bool = False) -> None:
     """Set default color palette."""
     color_pal = kp_pal if color_pal is None else color_pal
     sns.set_palette(color_pal)
     if show:
-        sns.palplot(color_pal)
+        print(color_pal)
     else:
-        return color_pal
+        sns.palplot(color_pal)
 
 
-def _make_ax(ax, figsize=None):
+def _make_ax(ax: plt.Axes, figsize: tuple[int, int] | None = None) -> plt.Axes:
     """
     Make a matplotlib.Axes object if one is not provided.
 
@@ -43,18 +45,17 @@ def _make_ax(ax, figsize=None):
     Returns:
         matplotlib.Axes: Figure axes object to use.
     """
-
     if not ax:
         _, ax = plt.subplots(figsize=figsize)
 
     return ax
 
 
-def savefig(func):
+def savefig(func: Callable) -> Callable:
     """Save figures."""
 
     @wraps(func)
-    def decorated(*args, **kwargs):
+    def decorated(*args: Any, **kwargs: Any) -> None:
 
         save_fig = kwargs.pop("save_fig", False)
         fig_name = kwargs.pop("fig_name", None)
@@ -89,14 +90,10 @@ custom_style_dict = {
 plot_style_args = ["title", "xlabel", "ylabel", "xlim", "ylim"] + list(custom_style_dict.keys())
 
 
-def apply_plot_style(ax, style_args=None, **kwargs):
+def apply_plot_style(ax: plt.Axes, style_args: list[str] | None = None, **kwargs: Any) -> None:
     """Apply custom plot style. Used to set default plot options."""
     style_args = (
-        style_args
-        if style_args
-        else [
-            i for i in plot_style_args if i not in custom_style_dict
-        ]  # removed .keys() from call
+        style_args if style_args else [i for i in plot_style_args if i not in custom_style_dict]
     )
     # Apply any provided axis style arguments
     plot_kwargs = {key: val for key, val in kwargs.items() if key in style_args}
@@ -140,7 +137,7 @@ def apply_plot_style(ax, style_args=None, **kwargs):
     plt.tight_layout()
 
 
-def style_plot(func, *args, **kwargs):  # pylint: disable=unused-argument
+def style_plot(func: Callable, *args: Any, **kwargs: Any) -> Callable:
     """
     Make a plot and run apply_plot_style() on it.
 
@@ -151,7 +148,7 @@ def style_plot(func, *args, **kwargs):  # pylint: disable=unused-argument
     """
 
     @wraps(func)
-    def decorated(*args, **kwargs):
+    def decorated(*args: Any, **kwargs: Any) -> None:
         # Grab any provided style arguments
         style_args = kwargs.pop("style_args", plot_style_args)
         # Get args from input function
@@ -169,16 +166,17 @@ def style_plot(func, *args, **kwargs):  # pylint: disable=unused-argument
     return decorated
 
 
-def set_trialavg_aes(ax, title=None, cs_dur=20, us_del=40, us_dur=2):
+def set_trialavg_aes(
+    ax: plt.Axes, title: str | None = None, cs_dur: int = 20, us_del: int = 40, us_dur: int = 2
+) -> plt.Axes:
     """
     Set aesthetics for trialavg plot.
 
     Args:
         ax (matplotib.Axes): Axes object to apply formatting to
         cs_dur (int, optional): CS duration (specified in trialavg call). Defaults to 20.
-    us_del (int, optional): US delivery time (specified in trialavg call). Defaults to 40.
-    us_dur : int, optional
-        US duration (specified in trialavg call). Defaults to 2.
+        us_del (int, optional): US delivery time (specified in trialavg call). Defaults to 40.
+        us_dur (int, optional):US duration (specified in trialavg call). Defaults to 2.
 
     Returns:
         matplotlib.Axes

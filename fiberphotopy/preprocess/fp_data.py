@@ -2,17 +2,17 @@
 import datetime
 from functools import wraps
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
-from numpy.typing import ArrayLike
 import pandas as pd
 import scipy.stats as stats
 import statsmodels.api as sm
+from numpy.typing import ArrayLike
 from scipy.optimize import curve_fit
 
 
-def save_data(func: Callable) -> None:
+def save_data(func: Callable) -> Callable:
     """
     Save data decorator function.
 
@@ -24,7 +24,7 @@ def save_data(func: Callable) -> None:
     """
 
     @wraps(func)
-    def wrapper(*args: str, **kwargs: str) -> Callable:
+    def wrapper(*args: str, **kwargs: str) -> Any:
         # add save_path and filename kwargs
         save = kwargs.pop("save", False)
         data_path = kwargs.pop("data_path", None)
@@ -50,12 +50,12 @@ def save_data(func: Callable) -> None:
 @save_data
 def load_doric_data(
     filename: str,
-    sig_name: str = None,
-    ref_name: str = None,
+    sig_name: str | None = None,
+    ref_name: str | None = None,
     input_ch: int = 1,
     sig_led: int = 2,
     ref_led: int = 1,
-    animal_id: str = None,
+    animal_id: str | None = None,
 ) -> pd.DataFrame:
     """
     Load photometry data from Doric Neuroscience Studio.
@@ -84,7 +84,8 @@ def load_doric_data(
     df_raw = pd.read_csv(f"{filename}")
     df = df_raw.copy()
     # rename Doric data cols
-    df.columns = [col.replace(" ", "") for col in df.columns]
+    # df.columns = [col.replace(" ", "") for col in df.columns]
+    df.columns = df.columns.str.replace(" ", "", regex=False)
     new_col_names = {
         "Time(s)": "time",
         f"AIn-{input_ch}-Dem(AOut-{ref_led})": ref_name if ref_name else "Y_ref",
@@ -98,8 +99,8 @@ def load_doric_data(
     df.insert(0, "Animal", animal_id if animal_id else Path(filename).name[:-4])
     # clean up TTL cols
     ttl_cols = df.columns.str.contains("ttl")
-    df.loc[:, ttl_cols] = np.round(df.loc[:, ttl_cols])
-    # df.loc[:, ttl_cols] = df.loc[:, ttl_cols].astype(int)
+    # df.loc[:, ttl_cols] = np.round(df.loc[:, ttl_cols])
+    df.loc[:, ttl_cols] = df.loc[:, ttl_cols].round()
     df[df.columns[ttl_cols]] = df[df.columns[ttl_cols]].astype(int)
     # drop any TTL channels with all 1s or 0s
     for col in df.loc[:, ttl_cols].columns:
@@ -112,6 +113,7 @@ def load_doric_data(
 def trim_ttl_data(df: pd.DataFrame, TTL_session_ch: int = 1, TTL_on: int = 0) -> pd.DataFrame:
     """
     Find first and last TTL input (to indicate start and end of behavioral session).
+
     - In the Doric recording TTL value is 1.
     - When Med-Assocaites SG-231 is ON, TTL value set to 0
 
@@ -131,8 +133,8 @@ def trim_ttl_data(df: pd.DataFrame, TTL_session_ch: int = 1, TTL_on: int = 0) ->
     """
     df = df.copy()
     ttl_ch = "ttl_" + str(TTL_session_ch)
-    first_row = min(df[df[ttl_ch] == TTL_on].index)
-    last_row = max(df[df[ttl_ch] == TTL_on].index)
+    first_row = df[df[ttl_ch] == TTL_on].index.min()
+    last_row = df[df[ttl_ch] == TTL_on].index.max()
     df = df[(df.index >= first_row) & (df.index <= last_row)]
     df = df.reset_index(drop=True)
     # reset 'time'
@@ -145,8 +147,7 @@ def trim_ttl_data(df: pd.DataFrame, TTL_session_ch: int = 1, TTL_on: int = 0) ->
 
 def resample_data(df: pd.DataFrame, freq: int) -> pd.DataFrame:
     """
-        Resample DataFrame to the provided frequency.
-
+    Resample DataFrame to the provided frequency.
 
     Parameters
     ----------
@@ -165,13 +166,13 @@ def resample_data(df: pd.DataFrame, freq: int) -> pd.DataFrame:
     df = df.copy()
     subject_id = df["Animal"].iloc[0]
     # convert index to timedelta and resample
-    df.index = df["time"]
+    # df.index = df["time"]
+    df.set_index("time", inplace=True)
     df.index = pd.to_timedelta(df.index, unit="s")
-    # TODO: check behavior of resample and set numeric_only explicitly.
-    df = df.resample(f"{period}S").mean(numeric_only=True)
-    df["time"] = df.index.total_seconds()
-    df = df.reset_index(drop=True)
-    # resample also moves 'Animal' to end of DataFrame, put it back at front
+    df = df.resample(f"{period}S").mean(numeric_only=True).reset_index()
+    # df = df.reset_index()
+    df["time"] = df["time"].dt.total_seconds()
+    # move 'Animal' to front of DataFrame
     cols = df.columns.tolist()
     cols.insert(0, "Animal")
     df = df.reindex(columns=cols)
@@ -191,7 +192,7 @@ def load_session_data(
     input_ch: int = 1,
     ref_led: int = 1,
     sig_led: int = 2,
-    subject_dict: dict[str, str] = None,
+    subject_dict: dict[str, str] | None = None,
     TTL_trim: bool = True,
     TTL_session_ch: int = 1,
     TTL_on: int = 0,
@@ -199,6 +200,8 @@ def load_session_data(
     freq: int = 10,
 ) -> pd.DataFrame:
     """
+    Load session data from a directory of photometry data files.
+
     1. Load photometry session data from a directory.
     2. (optional) Trim data to session with TTL pulse.
     3. (optional) Downsample the data.
@@ -279,6 +282,7 @@ def smooth_trial_data(df: pd.DataFrame, yvar: str, smooth_factor: float = 0.025)
 def trial_normalize(df: pd.DataFrame, yvar: str) -> pd.DataFrame:
     """
     Compute a normalized yvar from trial-level data.
+
     Calculated in two different ways:
         - znorm: whole-trial zscore
         - baseline_norm: standardized to trial baseline.
@@ -290,7 +294,6 @@ def trial_normalize(df: pd.DataFrame, yvar: str) -> pd.DataFrame:
     Returns:
         DataFrame: New column named {yvar}_norm and {yvar}_baseline_norm
     """
-
     assert "Trial" in df.columns, "'Trial' column missing from DataFrame"
 
     znorm_vals = []
@@ -332,7 +335,6 @@ def fit_linear(
     Returns:
         pd.DataFrame: Output DataFrame with new column "dFF" or "dFF_debleached".
     """
-
     df = df.copy()
 
     if by_trial:
@@ -398,7 +400,6 @@ def debleach_signals(
     Returns:
         DataFrame: Debleached data.
     """
-
     df = df.copy()
 
     if by_trial:

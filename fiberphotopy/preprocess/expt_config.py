@@ -1,13 +1,18 @@
 """Code for making expt_config files to describe experimental info."""
 import pathlib
 from pathlib import Path
+from typing import Any
 
 import yaml
 from ruamel.yaml.main import round_trip_dump as yaml_dump
 from ruamel.yaml.main import round_trip_load as yaml_load
 
 
-def create_expt_config(expt_name=None, config_name=None, project_path=None):
+def create_expt_config(
+    expt_name: str | None = None,
+    config_name: str | None = None,
+    project_path: str | Path | None = None,
+) -> None:
     """
     Create experiment configuration files.
 
@@ -27,6 +32,8 @@ def create_expt_config(expt_name=None, config_name=None, project_path=None):
     assert isinstance(
         project_path, (pathlib.PurePath, str)
     ), "project path must be a str or Path object"
+    if isinstance(project_path, str):
+        project_path = Path(project_path)
     # test config_filename exists
     for f in list(project_path.glob("*.y*ml")):
         assert f.stem != config_filename, f"Warning! {config_filename} file already exists"
@@ -55,13 +62,13 @@ def create_expt_config(expt_name=None, config_name=None, project_path=None):
     config_dict.yaml_set_comment_before_after_key(key="sessions", before="Session info")
     config_dict.yaml_set_comment_before_after_key(key="group_ids", before="Group info")
     # dump yaml into new file
-    with open(f"{project_path / config_file}", "w") as f:
-        f.write(yaml_dump(config_dict))
+    with open(f"{project_path / config_file}", "w") as o:
+        o.write(yaml_dump(config_dict))
 
     print(f"{config_file} has been created in \n {project_path}")
 
 
-def load_expt_config(config_path):
+def load_expt_config(config_path: str | Path) -> Any:
     """
     Load expt_info.yml to obtain project_path, raw_data_path, fig_path, and dict of group info.
 
@@ -84,9 +91,12 @@ def load_expt_config(config_path):
     return expt_config
 
 
-def update_expt_config(expt_config, config_filename, update_dict):
+def update_expt_config(
+    expt_config: dict[str, Any], config_filename: str, update_dict: dict[str, Any]
+) -> None:
     """
     Update an expt_config with information provided in update_dict.
+
     The keys in update_dict should be identical to expt_config.
 
     Args:
@@ -94,7 +104,6 @@ def update_expt_config(expt_config, config_filename, update_dict):
         config_filename (str): Name of expt_config file
         update_dict (dict): dict of keys in expt_config to update.
     """
-
     if "dirs" in update_dict:
         dir_dict = update_dict.pop("dirs")
         # update params contianing project_path

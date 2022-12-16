@@ -1,6 +1,9 @@
 """Visualize fiber photometry data."""
+from typing import Any
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 
 from ..preprocess.fp_data import smooth_trial_data
@@ -19,9 +22,9 @@ kp_pal: list[str] = [
 ]
 
 
-def plot_style(figure_size: tuple[int, int] = None):
+def plot_style(figure_size: tuple[int, int] | None = None) -> None:
     """Set default plot style."""
-    figure_size = figure_size if figure_size else [30, 20]
+    figure_size = figure_size if figure_size else (30, 20)
     size_scalar = (sum(figure_size) / 2) / 25
     # figure and axes info
     plt.rcParams["figure.facecolor"] = "white"
@@ -50,12 +53,12 @@ def plot_style(figure_size: tuple[int, int] = None):
 
 @style_plot
 def plot_raw_data(
-    df_plot,
-    yvar="465nm",
-    yiso="405nm",
-    xvar="time",
-    ax=None,
-):
+    df_plot: pd.DataFrame,
+    yvar: str = "465nm",
+    yiso: str = "405nm",
+    xvar: str = "time",
+    ax: plt.Axes | None = None,
+) -> None:
     """Plot raw data (`yvar` and `yiso`) over time interval specified in `xvar`."""
     ax = _make_ax(ax)
     X = df_plot.loc[:, xvar]
@@ -69,12 +72,12 @@ def plot_raw_data(
 
 @style_plot
 def plot_dff_data(
-    df_plot,
-    xvar="time",
-    yvar="465nm",
-    dffvar="dFF",
-    ax=None,
-):
+    df_plot: pd.DataFrame,
+    xvar: str = "time",
+    yvar: str = "465nm",
+    dffvar: str = "dFF",
+    ax: plt.Axes = None,
+) -> None:
     """Plot dFF data over time interval specified in `xvar`."""
     ax = _make_ax(ax)
     # plot dFF
@@ -88,41 +91,39 @@ def plot_dff_data(
 
 
 def plot_fp_session(
-    df,
-    yvar="465nm",
-    yiso="405nm",
-    dffvar="dFF",
-    xvar="time",
-    session="Training",
-    Yiso=True,
-    fig_size=(20, 10),
-    **kwargs,
-):
+    df: pd.DataFrame,
+    yvar: str = "465nm",
+    yiso: str = "405nm",
+    dffvar: str = "dFF",
+    xvar: str = "time",
+    session: str = "Training",
+    # Yiso: bool = True,
+    fig_size: tuple[int, int] = (20, 10),
+    **kwargs: Any,
+) -> None:
     """
     Generate a 2-panel plot of data fiber photometry recording session.
 
     Args:
         df (DataFrame): session data to plot. Can contain several
         yvar (str, optional): Column name of . Defaults to "465nm".
-        yiso (str, optional): _description_. Defaults to "405nm".
-        dffvar (str, optional): _description_. Defaults to "dFF".
-        xvar (str, optional): _description_. Defaults to "time".
-        session (str, optional): _description_. Defaults to "Training".
-        Yiso (bool, optional): _description_. Defaults to True.
-        fig_size (tuple, optional): _description_. Defaults to (20, 10).
+        yiso (str, optional): Isossbestic channel. Defaults to "405nm".
+        dffvar (str, optional): dFF variable. Defaults to "dFF".
+        xvar (str, optional): x-axis variable. Defaults to "time".
+        session (str, optional): Session name. Defaults to "Training".
+        fig_size (tuple, optional): Figure size. Defaults to (20, 10).
     """
     # plot session for each subject
     @savefig
     def _session_plot(
-        df_plot,
-        **kwargs,
-    ):
-
+        df_plot: pd.DataFrame,
+        **kwargs: Any,
+    ) -> None:
         fig, axs = plt.subplots(2, 1, figsize=fig_size)
         fig.suptitle(f"{session}: {df_plot['Animal'].unique()[0]}", size=28)
-        plot_raw_data(df_plot, ax=axs[0], **kwargs)
+        plot_raw_data(df_plot, ax=axs[0], yvar=yvar, yiso=yiso, xvar=xvar, **kwargs)
         axs[0].legend(fontsize=16, loc="upper right", bbox_to_anchor=(1, 1.1))
-        plot_dff_data(df_plot, ax=axs[1], **kwargs)
+        plot_dff_data(df_plot, ax=axs[1], yvar=yvar, dffvar=dffvar, xvar=xvar, **kwargs)
         for ax in axs:
             ax.margins(x=0)
             ax.tick_params(axis="both", labelsize=18, width=2, length=6)
@@ -135,17 +136,17 @@ def plot_fp_session(
 @savefig
 @style_plot
 def fp_traces_panel(
-    df,
-    session="session",
-    yvar="465nm",
-    yiso="405nm",
-    xlim=None,
-    y1shift=0.05,
-    y1lim=None,
-    y2lim=None,
-    y3lim=None,
-    fig_size=(24, 12),
-):
+    df: pd.DataFrame,
+    session: str = "session",
+    yvar: str = "465nm",
+    yiso: str = "405nm",
+    xlim: tuple[float, float] | None = None,
+    y1shift: float = 0.05,
+    y1lim: tuple[float, float] | None = None,
+    y2lim: tuple[float, float] | None = None,
+    y3lim: tuple[float, float] | None = None,
+    fig_size: tuple[int, int] = (24, 12),
+) -> None:
     """
     Plot raw (centered), predicted, and actual dFF traces.
 
@@ -164,14 +165,13 @@ def fp_traces_panel(
         # plot-1 405nm and 465nm raw values
         ax[0].plot(
             df_plot["time"],
-            df_plot[yiso] - np.mean(df_plot[yiso]),
-            # color="purple",
+            # df_plot[yiso] - np.mean(df_plot[yiso]),
+            df_plot[yiso] - df_plot[yiso].mean(),
             label="405nm",
         )
         ax[0].plot(
             df_plot["time"],
-            df_plot[yvar] - np.mean(df_plot[yvar]) + y1shift,
-            # color=yvar_col,
+            df_plot[yvar] - df_plot[yvar].mean() + y1shift,
             label=yvar,
         )
         ax[0].legend(loc="upper right", fontsize="small")
@@ -206,19 +206,19 @@ def fp_traces_panel(
 @savefig
 @style_plot
 def plot_trial_avg(
-    df,
-    yvar="dFF_baseline_norm",
-    xvar="time_trial",
-    hue=None,
-    smooth=True,
-    cs_dur=20,
-    us_del=40,
-    us_dur=2,
-    title=None,
-    fig_size=(12, 8),
-    ax=None,
-    **kwargs,
-):
+    df: pd.DataFrame,
+    yvar: str = "dFF_baseline_norm",
+    xvar: str = "time_trial",
+    hue: str | None = None,
+    smooth: bool = True,
+    cs_dur: int = 20,
+    us_del: int = 40,
+    us_dur: int = 2,
+    title: str | None = None,
+    fig_size: tuple[int, int] = (12, 8),
+    ax: plt.Axes | None = None,
+    **kwargs: Any,
+) -> None:
     """
     Plot trial-averaged dFF signal.
 
@@ -236,7 +236,6 @@ def plot_trial_avg(
         ax (matplotlib.axes.Axes, optional): Specify axes object to add plot to. Defaults to None.
                                              If `None` is provided, `_make_ax` is called.
     """
-
     plot_style()
     # initialize the plot and apply trialavg formatting
     ax = _make_ax(ax, figsize=fig_size)
@@ -285,16 +284,17 @@ def plot_trial_avg(
 @savefig
 @style_plot
 def plot_trial_subplot(
-    df,
-    yvar="dFF_znorm",
-    xvar="time_trial",
-    subplot_dims=(3, 4),
-    fig_size=(32, 24),
-    suptitle=None,
-    **kwargs,
-):
+    df: pd.DataFrame,
+    yvar: str = "dFF_znorm",
+    xvar: str = "time_trial",
+    subplot_dims: tuple[int, int] = (3, 4),
+    fig_size: tuple[int, int] = (32, 24),
+    suptitle: str | None = None,
+    **kwargs: Any,
+) -> None:
     """
     Generate trial-by-trial plot averaged across subjects.
+
     Users can control the shape of the suplots by passing a tuple into subplot_dims.
 
     Args:
@@ -322,7 +322,13 @@ def plot_trial_subplot(
 
 @savefig
 @style_plot
-def plot_trial_heatmap(df, yvar="dFF_znorm", fig_size=(32, 6), label_size=16, **kwargs):
+def plot_trial_heatmap(
+    df: pd.DataFrame,
+    yvar: str = "dFF_znorm",
+    fig_size: tuple[int, int] = (32, 6),
+    label_size: int = 16,
+    **kwargs: Any,
+) -> None:
     """Plot heatmap of dFF across trials."""
     # pivot df for heatmap format
     df_group_agg = df.pivot_table(index="Trial", columns="time_trial", values=yvar, aggfunc="mean")
@@ -354,13 +360,13 @@ def plot_trial_heatmap(df, yvar="dFF_znorm", fig_size=(32, 6), label_size=16, **
 
 
 def plot_single_trial(
-    trials_df,
-    subject,
-    trial,
-    signals,
-    cs_dur=20,
-    us_del=40,
-    us_dur=2,
+    trials_df: pd.DataFrame,
+    subject: str,
+    trial: int,
+    signals: list[str],
+    cs_dur: int = 20,
+    us_del: int = 40,
+    us_dur: int = 2,
 ) -> None:
     """
     Visualize a single trial.
@@ -369,7 +375,7 @@ def plot_single_trial(
         trials_df (DataFrame): Trial data to plot.
         subject (str): Subject id
         trial (int): Trial to plot
-        signals (list): List of signals to plot (overlap on same plot).
+        signals (list[str]): List of signals to plot (overlap on same plot).
         cs_dur (int, optional): CS duration. Defaults to 20.
         us_del (int, optional): Time of US delivery. Defaults to 40.
         us_dur (int, optional): US duration. Defaults to 2.
