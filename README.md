@@ -4,28 +4,36 @@
 Code for analyzing fiber photometry data collected on the Doric Fiber
 Photometery acquisition system.
 
+## Installation
+
+To install fiberphotopy from PyPi using `pip`:
+
+```bash
+pip install fiberphotopy
+```
+
+If you are using `poetry`, you can use the most up-to-date version by cloning the repo
+and running make install:
+
+```bash
+git clone https://github.com/kpeez/fiberphotopy.git
+make install
+```
+
+Alternatively, the most up-to-date version can be installed using the requirements.txt:
+
+```bash
+git clone https://github.com/kpeez/fiberphotopy.git
+pip install -r requirements.txt
+```
+
+## Usage
+
 Import the package as follows:
 
 ``` {.python}
 import fiberphotopy as fp
 ```
-
-## Installation
-
-The easiest way to install fiberphotopy is with `pip`.
-
-``` {.bash}
-pip install fiberphotopy
-```
-
-If you are using `poetry`, you can use the most up-to-date version by cloning the repo
-and running
-
-```bash
-make install
-```
-
-## Features
 
 ### Loading data
 
