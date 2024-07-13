@@ -312,6 +312,8 @@ def plot_trial_subplot(
         if i + 1 <= df["Trial"].max():
             single_trial = df.loc[df["Trial"] == i + 1, :]
             plot_trial_avg(single_trial, yvar, xvar, ax=ax, title=f"Trial {i+1}", **kwargs)
+            if "ylim" in kwargs:
+                ax.set_ylim(kwargs["ylim"])
         else:
             fig.delaxes(ax)
     if suptitle:
