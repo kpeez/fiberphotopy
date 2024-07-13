@@ -18,15 +18,14 @@ check_python: check_uv
 			conda deactivate; \
 		fi; \
 	fi; \
-	uv venv --python=3.11 --seed
+	uv venv --python=3.12 --seed
 
 install: check_python
 	@echo "📦 Installing dependencies"
 	@. .venv/bin/activate && \
 		uv pip compile pyproject.toml -o requirements.txt && \
 		uv pip install -r requirements.txt && \
-		uv pip install -e . && \
-		pre-commit install
+		uv pip install -e .
 
 install_dev: check_python
 	@echo "📦 Installing dependencies"
