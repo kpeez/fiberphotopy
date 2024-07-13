@@ -12,13 +12,15 @@ To install fiberphotopy from PyPi using `pip`:
 pip install fiberphotopy
 ```
 
-If you are using `poetry`, you can use the most up-to-date version by cloning the repo
+You can use the most up-to-date version by cloning the repo
 and running make install:
 
 ```bash
 git clone https://github.com/kpeez/fiberphotopy.git
 make install
 ```
+
+> Note: the `make install` command uses `uv` for package management. If you do not have `uv` installed it will be installed automatically when you run `make install`.
 
 Alternatively, the most up-to-date version can be installed using the requirements.txt:
 
