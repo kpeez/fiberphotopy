@@ -219,7 +219,7 @@ def load_session_data(
         TTL_session_ch (int, optional): TTL input channel for session start and end. Defaults to 1.
         TTL_on (int, optional): Value of TTL pulse when ON. Defaults to 0.
         downsample (bool, optional): Downsample the data. Defaults to True.
-        freq (int, optional): Frequency to downsample data to.. Defaults to 10.
+        freq (int, optional): Frequency to downsample data to. Defaults to 10.
 
     Returns:
         DataFrame: Combined data for every file in the input directory.
