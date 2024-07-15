@@ -1,4 +1,5 @@
 """Code for making expt_config files to describe experimental info."""
+
 import pathlib
 from pathlib import Path
 from typing import Any
@@ -62,7 +63,7 @@ def create_expt_config(
     config_dict.yaml_set_comment_before_after_key(key="sessions", before="Session info")
     config_dict.yaml_set_comment_before_after_key(key="group_ids", before="Group info")
     # dump yaml into new file
-    with open(f"{project_path / config_file}", "w") as o:
+    with open(f"{project_path / config_file}", "w", encoding="utf-8") as o:
         o.write(yaml_dump(config_dict))
 
     print(f"{config_file} has been created in \n {project_path}")
@@ -82,7 +83,7 @@ def load_expt_config(config_path: str | Path) -> Any:
         YAML object : YAML object containing relevant experiment information.
     """
     try:
-        with open(config_path, "r") as file:
+        with open(config_path, "r", encoding="utf-8") as file:
             expt_config = yaml.safe_load(file)
     except Exception as ex:
         print("Error reading the config file")
@@ -114,12 +115,12 @@ def update_expt_config(
             dir_dict["beh_data"] = dir_dict["project"] + "/raw/behavior"
         for key, val in dir_dict.items():
             expt_config["dirs"][key] = val
-    for key in update_dict:
-        expt_config[key] = update_dict[key]
+    for key, val in update_dict.items():
+        expt_config[key] = val
         print(f"expt_config[{key}] has been updated.")
 
     # dump yaml into new file
-    with open(config_filename, "w") as f:
+    with open(config_filename, "w", encoding="utf-8") as f:
         f.write(yaml_dump(expt_config))
-    #
+
     print(f"{config_filename} has been updated!")

@@ -1,4 +1,5 @@
 """Code for PSTH-related statistical analysis."""
+
 from typing import Any
 
 import pandas as pd

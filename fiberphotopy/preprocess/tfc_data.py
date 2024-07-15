@@ -1,4 +1,5 @@
 """Process TFC data."""
+
 from pathlib import Path
 
 import numpy as np
@@ -29,13 +30,13 @@ def make_tfc_comp_times(
     comp_times.append(["baseline", baseline, 0, baseline])
     session_time += baseline
     for t in range(n_trials):
-        comp_times.append([f"tone-{t+1}", cs_dur, session_time, session_time + cs_dur])
+        comp_times.append([f"tone-{t + 1}", cs_dur, session_time, session_time + cs_dur])
         session_time += cs_dur
-        comp_times.append([f"trace-{t+1}", trace_dur, session_time, session_time + trace_dur])
+        comp_times.append([f"trace-{t + 1}", trace_dur, session_time, session_time + trace_dur])
         session_time += trace_dur
-        comp_times.append([f"shock-{t+1}", us_dur, session_time, session_time + us_dur])
+        comp_times.append([f"shock-{t + 1}", us_dur, session_time, session_time + us_dur])
         session_time += us_dur
-        comp_times.append([f"iti-{t+1}", iti_dur, session_time, session_time + iti_dur])
+        comp_times.append([f"iti-{t + 1}", iti_dur, session_time, session_time + iti_dur])
         session_time += iti_dur
 
     comp_times_df = pd.DataFrame(comp_times, columns=["component", "duration", "start", "end"])
@@ -90,9 +91,10 @@ def find_tfc_components(df: pd.DataFrame, session: str = "train") -> pd.DataFram
     for i in range(len(comp_labs["component"])):
         start = float(comp_labs["start"][i])
         stop = float(comp_labs["end"][i])
-        df_new.loc[df_new["time"].between(start, stop), "Component",] = comp_labs[
-            "component"
-        ][i]
+        df_new.loc[
+            df_new["time"].between(start, stop),
+            "Component",
+        ] = comp_labs["component"][i]
 
     return df_new
 
@@ -116,7 +118,7 @@ def label_tfc_phases(df: pd.DataFrame, session: str = "train") -> pd.DataFrame:
         "cs_response",
         "shock_response",
     ]
-    session_type = [sesh for sesh in session_list if sesh in session][0]
+    session_type = next(sesh for sesh in session_list if sesh in session)
     df = find_tfc_components(df, session=session_type)
     df.loc[:, "Phase"] = df.loc[:, "Component"]
     # label tone, trace, and iti for all protocols
@@ -177,7 +179,7 @@ def get_tfc_trial_data(
     n_trials = len(tone_idx)
     n_subjects = df.Animal.nunique()
     # subset trial data (-20 prior to CS --> 100s after trace/shock)
-    for trial_num, (tone, iti) in enumerate(zip(tone_idx, iti_idx), 1):
+    for trial_num, (tone, iti) in enumerate(zip(tone_idx, iti_idx, strict=False), 1):
         start = comp_labs.loc[tone, "start"] + trial_start
         end = comp_labs.loc[iti, "start"] + iti_dur + trial_start
         df.loc[(start <= df.time) & (df.time < end), "Trial"] = trial_num

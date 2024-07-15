@@ -3,6 +3,7 @@ Functions and utilities to apply aesthetic styling to plots.
 
 Modified from neuroDSP: https://github.com/neurodsp-tools/neurodsp/tree/master/neurodsp/plts
 """
+
 import datetime
 import inspect
 from functools import wraps
@@ -56,7 +57,6 @@ def savefig(func: Callable) -> Callable:
 
     @wraps(func)
     def decorated(*args: Any, **kwargs: Any) -> None:
-
         save_fig = kwargs.pop("save_fig", False)
         fig_name = kwargs.pop("fig_name", None)
         fig_path = kwargs.pop("fig_path", None)
@@ -87,7 +87,7 @@ custom_style_dict = {
     "markerscale": 1,
 }
 
-plot_style_args = ["title", "xlabel", "ylabel", "xlim", "ylim"] + list(custom_style_dict.keys())
+plot_style_args = ["title", "xlabel", "ylabel", "xlim", "ylim", *list(custom_style_dict.keys())]
 
 
 def apply_plot_style(ax: plt.Axes, style_args: list[str] | None = None, **kwargs: Any) -> None:
@@ -153,13 +153,13 @@ def style_plot(func: Callable, *args: Any, **kwargs: Any) -> Callable:
         style_args = kwargs.pop("style_args", plot_style_args)
         # Get args from input function
         argspec = inspect.getfullargspec(func)
-        kwargs_local = dict(zip(reversed(argspec.args), reversed(argspec.defaults)))
+        kwargs_local = dict(zip(reversed(argspec.args), reversed(argspec.defaults), strict=False))
         kwargs_local.update(kwargs)
         style_kwargs = {key: kwargs.pop(key) for key in style_args if key in kwargs}
         # Create the plot
         func(*args, **kwargs)
         # Get plot axis, if a specific one was provided, or just grab current and apply style
-        cur_ax = kwargs["ax"] if "ax" in kwargs and kwargs["ax"] else plt.gca()
+        cur_ax = kwargs["ax"] if kwargs.get("ax") else plt.gca()
 
         apply_plot_style(cur_ax, **style_kwargs)
 
