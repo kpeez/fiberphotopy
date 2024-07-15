@@ -191,7 +191,7 @@ def set_trialavg_aes(
     # add dashed black rectangle around shock interval
     if us_dur > 0:
         ax.axvspan(us_del, us_del + us_dur, facecolor="none", edgecolor="black", ls="--")
-    ylab = r"Normalized $\Delta F/F %$"
+    ylab = r"Normalized $\Delta$ F/F %"
     xlab = "Time from cue onset (s)"
     tick_size = 22
     label_size = 28
