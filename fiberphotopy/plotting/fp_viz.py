@@ -284,7 +284,6 @@ def plot_trial_avg(
 
 
 @savefig
-@style_plot
 def plot_trial_subplot(
     df: pd.DataFrame,
     yvar: str = "dFF_znorm",
