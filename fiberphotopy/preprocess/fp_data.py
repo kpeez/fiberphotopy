@@ -1,4 +1,5 @@
 """Code for loading and cleaning data."""
+
 import datetime
 from functools import wraps
 from pathlib import Path
@@ -6,9 +7,9 @@ from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
-import scipy.stats as stats
 import statsmodels.api as sm
 from numpy.typing import ArrayLike
+from scipy import stats
 from scipy.optimize import curve_fit
 
 
@@ -138,7 +139,7 @@ def trim_ttl_data(df: pd.DataFrame, TTL_session_ch: int = 1, TTL_on: int = 0) ->
     df = df[(df.index >= first_row) & (df.index <= last_row)]
     df = df.reset_index(drop=True)
     # reset 'time'
-    df["time"] = df["time"] - df["time"][0]
+    df["time"] -= df["time"][0]
     # trim DataFrame after shiffting since t0 is now 0.0
     df = df[df["time"] < int(max(df["time"]))].reset_index(drop=True)
 
@@ -219,7 +220,7 @@ def load_session_data(
         TTL_session_ch (int, optional): TTL input channel for session start and end. Defaults to 1.
         TTL_on (int, optional): Value of TTL pulse when ON. Defaults to 0.
         downsample (bool, optional): Downsample the data. Defaults to True.
-        freq (int, optional): Frequency to downsample data to.. Defaults to 10.
+        freq (int, optional): Frequency to downsample data to. Defaults to 10.
 
     Returns:
         DataFrame: Combined data for every file in the input directory.
@@ -349,18 +350,13 @@ def fit_linear(
     else:
         Ypred = get_ols_preds(Y=df[Y_sig], X=df[Y_ref])
 
-    if debleached:
-        dFF = df[Y_sig] - Ypred
-    else:
-        dFF = (df[Y_sig] - Ypred) / Ypred * 100
+    dFF = df[Y_sig] - Ypred if debleached else (df[Y_sig] - Ypred) / Ypred * 100
 
-    return df.assign(
-        **{
-            f"{Y_sig}_pred": Ypred,
-            f"{Y_sig}_dFF": dFF,
-            f"{Y_sig}_dFF_zscore": stats.zscore(dFF, ddof=1),
-        }
-    )
+    return df.assign(**{
+        f"{Y_sig}_pred": Ypred,
+        f"{Y_sig}_dFF": dFF,
+        f"{Y_sig}_dFF_zscore": stats.zscore(dFF, ddof=1),
+    })
 
 
 def fit_biexponential(df: pd.DataFrame, t: str, y: str) -> ArrayLike:

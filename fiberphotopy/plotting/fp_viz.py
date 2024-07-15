@@ -1,4 +1,5 @@
 """Visualize fiber photometry data."""
+
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -113,6 +114,7 @@ def plot_fp_session(
         session (str, optional): Session name. Defaults to "Training".
         fig_size (tuple, optional): Figure size. Defaults to (20, 10).
     """
+
     # plot session for each subject
     @savefig
     def _session_plot(
@@ -249,7 +251,7 @@ def plot_trial_avg(
 
     if hue:
         hue_means = df.groupby([xvar, hue]).mean(numeric_only=True).reset_index()
-        if hue in ["Animal", "Trial"]:
+        if hue in {"Animal", "Trial"}:
             hue_stds = df.groupby([xvar, hue]).sem(numeric_only=True).reset_index()
         else:
             hue_stds = (
@@ -282,7 +284,6 @@ def plot_trial_avg(
 
 
 @savefig
-@style_plot
 def plot_trial_subplot(
     df: pd.DataFrame,
     yvar: str = "dFF_znorm",
@@ -311,7 +312,9 @@ def plot_trial_subplot(
     for i, ax in enumerate(axs.reshape(-1)):
         if i + 1 <= df["Trial"].max():
             single_trial = df.loc[df["Trial"] == i + 1, :]
-            plot_trial_avg(single_trial, yvar, xvar, ax=ax, title=f"Trial {i+1}", **kwargs)
+            plot_trial_avg(single_trial, yvar, xvar, ax=ax, title=f"Trial {i + 1}", **kwargs)
+            if "ylim" in kwargs:
+                ax.set_ylim(kwargs["ylim"])
         else:
             fig.delaxes(ax)
     if suptitle:

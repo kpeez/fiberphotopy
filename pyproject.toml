@@ -1,83 +1,86 @@
-[tool.poetry]
+[project]
 name = "fiberphotopy"
 version = "0.2.31"
 description = "Package for loading and processing fiber photometry data"
-authors = ["kpuhger <krpuhger@gmail.com>"]
+authors = [{ name = "kpuhger", email = "krpuhger@gmail.com" }]
 license = "MIT"
 readme = "README.md"
+
+
+dependencies = [
+  "pandas",
+  "notebook",
+  "numpy",
+  "scipy",
+  "seaborn",
+  "matplotlib",
+  "ruamel.yaml",
+  "PyYAML",
+  "pingouin",
+  "openpyxl",
+  "notebook",
+]
+
+[project.optional-dependencies]
+dev = ["ruff", "pytest", "pre-commit", "ipykernel", "mkdocs", "mkdocs-material", "mkdocstrings"]
+
+[project.urls]
 repository = "https://github.com/kpuhger/fiberphotopy"
 
-
-[tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-pandas = "^1.5"
-numpy = "^1.23"
-scipy = "^1.9"
-seaborn = "^0.12"
-matplotlib = "^3.5"
-"ruamel.yaml" = "^0.17.21"
-PyYAML = "^6.0"
-pingouin = "^0.5.2"
-openpyxl = "^3.0.10"
-notebook = "^6.5.2"
-
-[tool.poetry.group.dev.dependencies]
-black = "^22.10"
-isort = "^5.10.1"
-flake8 = "^6.0"
-flake8-bugbear = "^22.9.11"
-flake8-simplify = "^0.19.3"
-flake8-comprehensions = "^3.10.1"
-flake8-unused-arguments = "^0.0.11"
-flake8-annotations = "^2.9.1"
-flake8-docstrings = "^1.6.0"
-mypy = "^0.991"
-ipykernel = "^6.19.2"
-
-[tool.poetry.group.test.dependencies]
-pytest = "^7.2.0"
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.4.2"
-mkdocs-material = "^8.5.10"
-mkdocstrings = {extras = ["python"], version = "^0.19.0"}
-
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.black]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--log-cli-level=INFO -sv --durations=0"
+
+[tool.ruff]
 line-length = 100
-include = '\.pyi?$'
-target-version = ['py310']
-fast = true
-exclude = '''
-(
-  /(                        # exclude a few common directories in the
-    \.git                   # root of the project
-    | \.pytest_cache
-    | python-venv
-    | \.venv
-    | build
-    | dist
-    | \.tox
-  ))
-'''
+target-version = "py310"
 
-[tool.isort]
-profile="black"
-
-[tool.mypy]
-files = ["fiberphotopy"]
-disallow_untyped_defs = "True"
-no_implicit_optional = "True"
-ignore_missing_imports = "True"
-check_untyped_defs = "True"
-warn_return_any = "True"
-follow_imports = "skip"
-warn_unused_ignores = "True"
-show_error_codes = "True"
-exclude = [
-    '\.venv',
-    'tests'
+[tool.ruff.lint]
+select = [
+  # pycodestyle
+  "E",
+  "W",
+  # pyflakes
+  "F",
+  # pylint
+  "PL",
+  # isort
+  "I",
+  # flake8-bugbear
+  "B",
+  # flake8-simplify
+  "SIM",
+  # flake8-comprehensions
+  "C4",
+  # ruff
+  "RUF",
 ]
+fixable = ["ALL"]
+ignore = [
+  # too many arguments
+  "PLR0913",
+  # too many local variables
+  "PLR0914",
+  # too many positional arguments
+  "PLR0917",
+  # magic number
+  "PLR2004",
+  # line too long
+  "E501",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401", "D104"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
