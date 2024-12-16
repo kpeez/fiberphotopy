@@ -1,28 +1,33 @@
 [project]
 name = "fiberphotopy"
-version = "0.2.31"
+version = "0.2.32"
+requires-python = ">=3.11"
 description = "Package for loading and processing fiber photometry data"
 authors = [{ name = "kpuhger", email = "krpuhger@gmail.com" }]
 license = "MIT"
 readme = "README.md"
 
-
 dependencies = [
-  "pandas",
-  "notebook",
-  "numpy",
-  "scipy",
-  "seaborn",
-  "matplotlib",
-  "ruamel.yaml",
-  "PyYAML",
-  "pingouin",
-  "openpyxl",
-  "notebook",
+    "notebook>=7.3.1",
+    "numpy>=2.2.0",
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
+    "pingouin>=0.5.5",
+    "pyyaml>=6.0.2",
+    "ruamel-yaml>=0.18.6",
+    "scipy>=1.14.1",
+    "seaborn>=0.13.2",
 ]
 
-[project.optional-dependencies]
-dev = ["ruff", "pytest", "pre-commit", "ipykernel", "mkdocs", "mkdocs-material", "mkdocstrings"]
+[dependency-groups]
+dev = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.5.49",
+    "mkdocstrings>=0.27.0",
+    "pre-commit>=4.0.1",
+    "pytest>=8.3.4",
+    "ruff>=0.8.3",
+]
 
 [project.urls]
 repository = "https://github.com/kpuhger/fiberphotopy"
@@ -37,40 +42,29 @@ addopts = "--log-cli-level=INFO -sv --durations=0"
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [
-  # pycodestyle
-  "E",
+  "E",   # pycodestyle
   "W",
-  # pyflakes
-  "F",
-  # pylint
-  "PL",
-  # isort
-  "I",
-  # flake8-bugbear
-  "B",
-  # flake8-simplify
-  "SIM",
-  # flake8-comprehensions
-  "C4",
-  # ruff
-  "RUF",
+  "F",   # pyflakes
+  "PL",  # pylint
+  "I",   # isort
+  "B",   # flake8-bugbear
+  "SIM", # flake8-simplify
+  "C4",  # flake8-comprehensions
+  "RUF", # ruff
 ]
 fixable = ["ALL"]
 ignore = [
-  # too many arguments
-  "PLR0913",
-  # too many local variables
-  "PLR0914",
-  # too many positional arguments
-  "PLR0917",
-  # magic number
-  "PLR2004",
-  # line too long
-  "E501",
+  "PLR0913", # too many arguments
+  "PLR0914", # too many local variables
+  "PLR0917", # too many positional arguments
+  "PLR2004", # magic number
+  "PLW2901", # for loop variable overwritten by assignment target
+  "E501",    # line too long
+  "B008",    # function-call-in-default-argument
 ]
 
 [tool.ruff.lint.per-file-ignores]
