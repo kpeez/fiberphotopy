@@ -1,4 +1,3 @@
-
 # fiberphotopy
 
 Code for analyzing fiber photometry data collected on the Doric Fiber
@@ -6,28 +5,25 @@ Photometery acquisition system.
 
 ## Installation
 
-To install fiberphotopy from PyPi using `pip`:
-
-```bash
-pip install fiberphotopy
-```
-
-You can use the most up-to-date version by cloning the repo
-and running make install:
+The simplest way to install fiberphotopy is by cloning the repository and installing the requirements:
 
 ```bash
 git clone https://github.com/kpeez/fiberphotopy.git
+cd fiberphotopy
+pip install -r requirements.txt
+```
+
+### Development Installation
+
+For development work, you can use `make install` which sets up the development environment:
+
+```bash
+git clone https://github.com/kpeez/fiberphotopy.git
+cd fiberphotopy
 make install
 ```
 
-> Note: the `make install` command uses `uv` for package management. If you do not have `uv` installed it will be installed automatically when you run `make install`.
-
-Alternatively, the most up-to-date version can be installed using the requirements.txt:
-
-```bash
-git clone https://github.com/kpeez/fiberphotopy.git
-pip install -r requirements.txt
-```
+> Note: The `make install` command uses `uv` for package management. If you don't have `uv` installed, it will be installed automatically when you run `make install`.
 
 ## Usage
 
