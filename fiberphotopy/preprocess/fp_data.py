@@ -170,7 +170,7 @@ def resample_data(df: pd.DataFrame, freq: int) -> pd.DataFrame:
     # df.index = df["time"]
     df.set_index("time", inplace=True)
     df.index = pd.to_timedelta(df.index, unit="s")
-    df = df.resample(f"{period}S").mean(numeric_only=True).reset_index()
+    df = df.resample(f"{period}s").mean(numeric_only=True).reset_index()
     # df = df.reset_index()
     df["time"] = df["time"].dt.total_seconds()
     # move 'Animal' to front of DataFrame
