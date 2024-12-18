@@ -352,11 +352,13 @@ def fit_linear(
 
     dFF = df[Y_sig] - Ypred if debleached else (df[Y_sig] - Ypred) / Ypred * 100
 
-    return df.assign(**{
-        f"{Y_sig}_pred": Ypred,
-        f"{Y_sig}_dFF": dFF,
-        f"{Y_sig}_dFF_zscore": stats.zscore(dFF, ddof=1),
-    })
+    return df.assign(
+        **{
+            f"{Y_sig}_pred": Ypred,
+            f"{Y_sig}_dFF": dFF,
+            f"{Y_sig}_dFF_zscore": stats.zscore(dFF, ddof=1),
+        }
+    )
 
 
 def fit_biexponential(df: pd.DataFrame, t: str, y: str) -> ArrayLike:
